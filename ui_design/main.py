@@ -73,10 +73,40 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             image = results[0].plot()
             self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
+    #相機
+    def open_camera(self):
+        self.timer.stop()
+        print("camera open")
+        camera_num = 0
+        self.video = cv2.VideoCapture(camera_num)
+        if not self.video.isOpened():
+            print("No camera opening.")
+            return
+        video_fps = self.video.get(cv2.CAP_PROP_FPS)
+        if video_fps == 0:
+            video_fps = 60
+        self.timer.setInterval(1000/video_fps)
+        self.timer.start()
+
+    def test_camera(self):
+        ret, frame = self.video.read()
+        if not ret:
+            self.timer.stop()
+        else:
+            self.input_media.setPixmap(QPixmap.fromImage(convert2QImage(frame)))
+            print("Predecting camera...")
+            results = self.model(frame)
+            image = results[0].plot()
+            self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
+
+
+
+
     # 連結按鈕
     def bind_slots(self):
         self.button_picture.clicked.connect(self.open_picture)
         self.button_video.clicked.connect(self.open_video)
+        self.button_camera.clicked.connect(self.open_camera)
         self.timer.timeout.connect(self.test_video)
 
 
