@@ -78,7 +78,7 @@ class Ui_MainWindow(object):
         self.button_picture.setObjectName("button_picture")
         self.button_picture.setGeometry(QRect(120, 300, 141, 51))
         self.button_video = QPushButton(self.centralwidget)
-        self.button_video.setObjectName("bitton_video")
+        self.button_video.setObjectName("button_video")
         self.button_video.setGeometry(QRect(520, 300, 141, 51))
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QStatusBar(MainWindow)
