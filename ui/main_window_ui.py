@@ -49,6 +49,9 @@ class Ui_MainWindow(object):
         self.button_camera = QPushButton(self.centralwidget)
         self.button_camera.setObjectName(u"button_camera")
         self.button_camera.setGeometry(QRect(320, 300, 141, 51))
+        self.button_offset = QPushButton(self.centralwidget)
+        self.button_offset.setObjectName(u"button_offset")
+        self.button_offset.setGeometry(QRect(0, 0, 91, 31))
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -66,5 +69,6 @@ class Ui_MainWindow(object):
         self.button_picture.setText(QCoreApplication.translate("MainWindow", u"\u5716\u7247\u6aa2\u6e2c", None))
         self.button_video.setText(QCoreApplication.translate("MainWindow", u"\u5f71\u7247\u6aa2\u6e2c", None))
         self.button_camera.setText(QCoreApplication.translate("MainWindow", u"\u93e1\u982d\u6aa2\u6e2c", None))
+        self.button_offset.setText(QCoreApplication.translate("MainWindow", u"\u8abf\u6574offset", None))
     # retranslateUi
 
