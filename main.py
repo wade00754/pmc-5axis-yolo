@@ -22,6 +22,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.pose_model = YOLO("yolov8n-pose.pt")
         self.object_model = YOLO("best.pt")
+        self.offsets = None
         self.timer = QTimer()
         self.timer.setInterval(1000)
         self.video = None
