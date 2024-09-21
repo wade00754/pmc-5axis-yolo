@@ -17,9 +17,8 @@ def generate_colors(num_classes):
 
 
 # 測試手部是否在按鈕上
-def test_hand_on_button(pose_results, detection_results, adj_value):
-    # 獲取關鍵點 (關注左手或右手的位置)
-    # 假設關鍵點索引為: 9 是右手腕，10 是左手腕（根據 COCO 的姿態標註）
+def test_hand_on_button(pose_results, object_results, offsets):
+    # 獲取關鍵點 索引為: 9 是右手腕，10 是左手腕（根據 COCO 的姿態標註）
     keypoints = pose_results[0].keypoints.xy[0]
 
     # 取得右手與左手的座標 (x, y)
@@ -33,15 +32,15 @@ def test_hand_on_button(pose_results, detection_results, adj_value):
     is_hand_on_feed = False
 
     # 遍歷每一個偵測結果來找到 stop 和 feed 的範圍
-    for detection in detection_results[0].boxes:
+    for object in object_results[0].boxes:
         # 獲取偵測框的座標
-        x1, y1, x2, y2 = map(int, detection.xyxy[0].tolist())
+        x1, y1, x2, y2 = map(int, object.xyxy[0].tolist())
 
         # 獲取物件的類別編號
-        class_id = int(detection.cls[0])
+        class_id = int(object.cls[0])
 
         # 獲取物件的類別名稱
-        class_name = detection_results[0].names[class_id]
+        class_name = object_results[0].names[class_id]
 
         # 如果是 Stop 按鈕，記錄其範圍
         if class_name == "stop":
@@ -51,39 +50,29 @@ def test_hand_on_button(pose_results, detection_results, adj_value):
         if class_name == "feed":
             feed_region = {"x_min": x1, "x_max": x2, "y_min": y1, "y_max": y2}
 
-    # 判斷手是否在 Stop 按鈕上
+    # 判斷左手是否在 Stop 按鈕上
     if stop_region:
-        right_hand_x = right_hand[0] + adj_value[0]
-        right_hand_y = right_hand[1] + adj_value[1]
-        left_hand_x = left_hand[0] + adj_value[0]
-        left_hand_y = left_hand[1] + adj_value[1]
-        x_min = stop_region["x_min"]
-        x_max = stop_region["x_max"]
-        y_min = stop_region["y_min"]
-        y_max = stop_region["y_max"]
+        left_hand_x = left_hand.numpy()[0] + offsets["stop_x"]
+        left_hand_y = left_hand.numpy()[1] + offsets["stop_y"]
         is_hand_on_stop = (
-            x_min <= right_hand_x <= x_max and y_min <= right_hand_y <= y_max
-        ) or (x_min <= left_hand_x <= x_max and y_min <= left_hand_y <= y_max)
+            stop_region["x_min"] <= left_hand_x <= stop_region["x_max"]
+            and stop_region["y_min"] <= left_hand_y <= stop_region["y_max"]
+        )
 
-    # 判斷手是否在 Feed 按鈕上
+    # 判斷右手是否在 Feed 按鈕上
     if feed_region:
-        right_hand_x = right_hand[0] + adj_value[2]
-        right_hand_y = right_hand[1] + adj_value[3]
-        left_hand_x = left_hand[0] + adj_value[2]
-        left_hand_y = left_hand[1] + adj_value[3]
-        x_min = feed_region["x_min"]
-        x_max = feed_region["x_max"]
-        y_min = feed_region["y_min"]
-        y_max = feed_region["y_max"]
+        right_hand_x = right_hand.numpy()[0] + offsets["feed_x"]
+        right_hand_y = right_hand.numpy()[1] + offsets["feed_y"]
         is_hand_on_feed = (
-            x_min <= right_hand_x <= x_max and y_min <= right_hand_y <= y_max
-        ) or (x_min <= left_hand_x <= x_max and y_min <= left_hand_y <= y_max)
+            feed_region["x_min"] <= right_hand_x <= feed_region["x_max"]
+            and feed_region["y_min"] <= right_hand_y <= feed_region["y_max"]
+        )
 
     return is_hand_on_stop, is_hand_on_feed
 
 
 # 測試單張影像
-def predict_single(image, pose_model, object_model, adj_value):
+def predict_single(image, pose_model, object_model, offsets):
     # # 讀取影像
     # image_path = cv2.imread(image_path)
 
@@ -167,7 +156,7 @@ def predict_single(image, pose_model, object_model, adj_value):
         )
 
     is_hand_on_stop, is_hand_on_feed = test_hand_on_button(
-        pose_results, object_results, adj_value
+        pose_results, object_results, offsets
     )
 
     return combined_frame, is_hand_on_stop, is_hand_on_feed
