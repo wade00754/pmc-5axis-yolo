@@ -22,7 +22,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.pose_model = YOLO("yolov8n-pose.pt")
         self.object_model = YOLO("best.pt")
-        self.offsets = None
+        self.offsets = {
+            "stop_x": 52,
+            "stop_y": 0,
+            "feed_x": 45,
+            "feed_y": -20,
+        }
         self.timer = QTimer()
         self.timer.setInterval(1000)
         self.video = None
@@ -46,7 +51,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 print("No picture selected.")
         self.offsets = utils.adj_offsets(
-            to_adj, file_path, self.pose_model, self.object_model
+            to_adj, self.offsets, file_path, self.pose_model, self.object_model
         )
 
     # 圖片開啟
@@ -102,7 +107,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print(f"Is hand on feed button: {is_hand_on_feed}")
             self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
-    #相機
+    # 相機
     def open_camera(self):
         self.timer.stop()
         print("camera open")
@@ -114,7 +119,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         video_fps = self.video.get(cv2.CAP_PROP_FPS)
         if video_fps == 0:
             video_fps = 60
-        self.timer.setInterval(1000/video_fps)
+        self.timer.setInterval(1000 / video_fps)
         self.timer.start()
 
     def test_camera(self):
@@ -127,9 +132,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             results = self.model(frame)
             image = results[0].plot()
             self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
-
-
-
 
     # 連結按鈕
     def bind_slots(self):
