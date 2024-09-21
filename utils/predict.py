@@ -52,8 +52,8 @@ def test_hand_on_button(pose_results, object_results, offsets):
 
     # 判斷左手是否在 Stop 按鈕上
     if stop_region:
-        left_hand_x = left_hand.numpy()[0] + offsets["stop_x"]
-        left_hand_y = left_hand.numpy()[1] + offsets["stop_y"]
+        left_hand_x = left_hand.cpu().numpy()[0] + offsets["stop_x"]
+        left_hand_y = left_hand.cpu().numpy()[1] + offsets["stop_y"]
         is_hand_on_stop = (
             stop_region["x_min"] <= left_hand_x <= stop_region["x_max"]
             and stop_region["y_min"] <= left_hand_y <= stop_region["y_max"]
@@ -61,8 +61,8 @@ def test_hand_on_button(pose_results, object_results, offsets):
 
     # 判斷右手是否在 Feed 按鈕上
     if feed_region:
-        right_hand_x = right_hand.numpy()[0] + offsets["feed_x"]
-        right_hand_y = right_hand.numpy()[1] + offsets["feed_y"]
+        right_hand_x = right_hand.cpu().numpy()[0] + offsets["feed_x"]
+        right_hand_y = right_hand.cpu().numpy()[1] + offsets["feed_y"]
         is_hand_on_feed = (
             feed_region["x_min"] <= right_hand_x <= feed_region["x_max"]
             and feed_region["y_min"] <= right_hand_y <= feed_region["y_max"]

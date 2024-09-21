@@ -40,15 +40,15 @@ def adj_offsets(
         if stop_region:
             x = (stop_region["x_min"] + stop_region["x_max"]) / 2
             y = (stop_region["y_min"] + stop_region["y_max"]) / 2
-            offsets["stop_x"] = x - left_hand.numpy()[0]
-            offsets["stop_y"] = y - left_hand.numpy()[1]
+            offsets["stop_x"] = x - left_hand.cpu().numpy()[0]
+            offsets["stop_y"] = y - left_hand.cpu().numpy()[1]
 
         # 判斷右手和 Feed 按鈕的相對位置
         if feed_region:
             x = (feed_region["x_min"] + feed_region["x_max"]) / 2
             y = (feed_region["y_min"] + feed_region["y_max"]) / 2
-            offsets["feed_x"] = x - right_hand.numpy()[0]
-            offsets["feed_y"] = y - right_hand.numpy()[1]
+            offsets["feed_x"] = x - right_hand.cpu().numpy()[0]
+            offsets["feed_y"] = y - right_hand.cpu().numpy()[1]
 
     if offsets == {
         "stop_x": 52,
