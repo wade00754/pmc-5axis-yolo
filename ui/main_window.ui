@@ -78,7 +78,7 @@
      <string>圖片檢測</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="bitton_video">
+   <widget class="QPushButton" name="button_video">
     <property name="geometry">
      <rect>
       <x>520</x>
@@ -89,6 +89,19 @@
     </property>
     <property name="text">
      <string>影片檢測</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_camera">
+    <property name="geometry">
+     <rect>
+      <x>320</x>
+      <y>300</y>
+      <width>141</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>鏡頭檢測</string>
     </property>
    </widget>
   </widget>
