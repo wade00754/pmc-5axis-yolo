@@ -3,9 +3,9 @@ import cv2
 from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog
 from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtCore import QTimer
-from ui.main_window_ui import Ui_MainWindow
 from ultralytics import YOLO
-from utils.predict import predict_single
+from ui.main_window_ui import Ui_MainWindow
+import utils
 
 
 def convert2QImage(img):
@@ -27,6 +27,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.video = None
         self.bind_slots()
 
+    # 設定手腕調整值
+    def set_offsets(self):
+        self.timer.stop()
+        # TODO: implement adj_offsets UI
+        # TODO: objects範圍寬限值
+        to_adj = True
+        file_path = None
+        if to_adj:
+            print("Selecting a picture...")
+            file_path = QFileDialog.getOpenFileName(
+                self, dir="images", filter="*.jpg;*.png;*.jpeg"
+            )
+            if file_path[0]:
+                file_path = file_path[0]
+                print(f"Opened picture: {file_path}")
+            else:
+                print("No picture selected.")
+        self.offsets = utils.adj_offsets(
+            to_adj, file_path, self.pose_model, self.object_model
+        )
+
     # 圖片開啟
     def open_picture(self):
         self.timer.stop()
@@ -44,10 +65,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def test_picture(self, file_path):
         self.input_media.setPixmap(QPixmap(file_path))
         print("Testing picture...")
-        # TODO: implement adj_value function & Objects範圍寬限值
-        adj_value = [52, 0, 45, -20]  # adj_value=[stop_x, stop_y, feed_x, feed_y]
-        image, is_hand_on_stop, is_hand_on_feed = predict_single(
-            file_path, self.pose_model, self.object_model, adj_value
+        image, is_hand_on_stop, is_hand_on_feed = utils.predict_single(
+            file_path, self.pose_model, self.object_model, self.offsets
         )
         print(f"Is hand on stop button: {is_hand_on_stop}")
         print(f"Is hand on feed button: {is_hand_on_feed}")
@@ -75,9 +94,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             self.input_media.setPixmap(QPixmap.fromImage(convert2QImage(frame)))
             print("Testing video...")
-            adj_value = [52, 0, 45, -20]  # adj_value=[stop_x, stop_y, feed_x, feed_y]
-            image, is_hand_on_stop, is_hand_on_feed = predict_single(
-                frame, self.pose_model, self.object_model, adj_value
+            image, is_hand_on_stop, is_hand_on_feed = utils.predict_single(
+                frame, self.pose_model, self.object_model, self.offsets
             )
             print(f"Is hand on stop button: {is_hand_on_stop}")
             print(f"Is hand on feed button: {is_hand_on_feed}")
