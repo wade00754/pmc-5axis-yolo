@@ -1,13 +1,6 @@
 def adj_offsets(
-    to_adj, image, pose_model, object_model
+    to_adj, offsets, image, pose_model, object_model
 ):  # similar to test_hand_on_button
-    # default adj_values
-    offsets = {
-        "stop_x": 52,
-        "stop_y": 0,
-        "feed_x": 45,
-        "feed_y": -20,
-    }
     if to_adj:
         print("Adjusting offsets...")
         pose_results = pose_model(image)
