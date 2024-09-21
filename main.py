@@ -136,6 +136,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.button_picture.clicked.connect(self.open_picture)
         self.button_video.clicked.connect(self.open_video)
         self.button_camera.clicked.connect(self.open_camera)
+        self.button_offset.clicked.connect(self.set_offsets)
         self.timer.timeout.connect(self.test_video)
 
 
