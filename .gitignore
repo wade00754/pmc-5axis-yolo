@@ -170,3 +170,6 @@ roboflow*
 # Codespaces
 .devcontainer
 .github
+
+# Mailmap
+.mailmap
