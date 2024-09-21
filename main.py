@@ -5,7 +5,7 @@ from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtCore import QTimer
 from ui.main_window_ui import Ui_MainWindow
 from ultralytics import YOLO
-from tasks.predict import predict_single
+from utils.predict import predict_single
 
 
 def convert2QImage(img):
