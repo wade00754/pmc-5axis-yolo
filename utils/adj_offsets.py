@@ -1,6 +1,8 @@
 def adj_offsets(
     to_adj, offsets, image, pose_model, object_model
 ):  # similar to test_hand_on_button
+    old_offsets = offsets.copy()  # save old offsets
+
     if to_adj:
         print("Adjusting offsets...")
         pose_results = pose_model(image)
@@ -57,6 +59,8 @@ def adj_offsets(
         "feed_y": -20,
     }:
         print("No changes adjusted. Using default offsets.")
+    elif offsets == old_offsets:
+        print("No changes adjusted. Using previous offsets.")
     else:
         print(
             f"Adjusted offsets:",

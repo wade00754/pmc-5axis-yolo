@@ -49,6 +49,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 file_path = file_path[0]
                 print(f"Opened picture: {file_path}")
             else:
+                to_adj = False
                 print("No picture selected.")
         self.offsets = utils.adj_offsets(
             to_adj, self.offsets, file_path, self.pose_model, self.object_model
