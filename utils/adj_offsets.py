@@ -1,13 +1,8 @@
 def adj_offsets(
-    to_adj, image, pose_model, object_model
+    to_adj, offsets, image, pose_model, object_model
 ):  # similar to test_hand_on_button
-    # default adj_values
-    offsets = {
-        "stop_x": 52,
-        "stop_y": 0,
-        "feed_x": 45,
-        "feed_y": -20,
-    }
+    old_offsets = offsets.copy()  # save old offsets
+
     if to_adj:
         print("Adjusting offsets...")
         pose_results = pose_model(image)
@@ -47,15 +42,15 @@ def adj_offsets(
         if stop_region:
             x = (stop_region["x_min"] + stop_region["x_max"]) / 2
             y = (stop_region["y_min"] + stop_region["y_max"]) / 2
-            offsets["stop_x"] = x - left_hand.numpy()[0]
-            offsets["stop_y"] = y - left_hand.numpy()[1]
+            offsets["stop_x"] = x - left_hand.cpu().numpy()[0]
+            offsets["stop_y"] = y - left_hand.cpu().numpy()[1]
 
         # 判斷右手和 Feed 按鈕的相對位置
         if feed_region:
             x = (feed_region["x_min"] + feed_region["x_max"]) / 2
             y = (feed_region["y_min"] + feed_region["y_max"]) / 2
-            offsets["feed_x"] = x - right_hand.numpy()[0]
-            offsets["feed_y"] = y - right_hand.numpy()[1]
+            offsets["feed_x"] = x - right_hand.cpu().numpy()[0]
+            offsets["feed_y"] = y - right_hand.cpu().numpy()[1]
 
     if offsets == {
         "stop_x": 52,
@@ -64,6 +59,8 @@ def adj_offsets(
         "feed_y": -20,
     }:
         print("No changes adjusted. Using default offsets.")
+    elif offsets == old_offsets:
+        print("No changes adjusted. Using previous offsets.")
     else:
         print(
             f"Adjusted offsets:",
