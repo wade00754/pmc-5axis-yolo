@@ -134,12 +134,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             image = results[0].plot()
             self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
+    def stop_test(self):
+        self.timer.stop()
+        print("STOP!")        
+
+
     # 連結按鈕
     def bind_slots(self):
         self.button_picture.clicked.connect(self.open_picture)
         self.button_video.clicked.connect(self.open_video)
         self.button_camera.clicked.connect(self.open_camera)
         self.button_offset.clicked.connect(self.set_offsets)
+        self.button_stop.clicked.connect(self.stop_test)
         self.timer.timeout.connect(self.test_video)
 
 
