@@ -71,6 +71,11 @@ def test_hand_on_button(pose_results, object_results, offsets):
     return is_hand_on_stop, is_hand_on_feed
 
 
+def test_knife_base_collision(pose_results, object_results, offsets):
+    is_knife_base_collision = False
+    return is_knife_base_collision
+
+
 # 測試單張影像
 def predict_single(image, pose_model, object_model, offsets):
     # # 讀取影像
