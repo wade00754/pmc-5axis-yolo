@@ -1,10 +1,18 @@
 import sys
 import cv2
-from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog
+from PySide6.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QFileDialog,
+    QDialog,
+    QWidget,
+    QDialogButtonBox,
+)
 from PySide6.QtGui import QPixmap, QImage
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer, Qt
 from ultralytics import YOLO
 from ui.main_window_ui import Ui_MainWindow
+from ui.ask_offset_ui import Ui_Dialog
 import utils
 
 
@@ -13,6 +21,25 @@ def convert2QImage(img):
     bytes_per_line = width * channel
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     return QImage(img.data, width, height, bytes_per_line, QImage.Format_RGB888)
+
+
+class AskInitOffset(QDialog):
+    def __init__(self, set_offsets_callback):
+        super(AskInitOffset, self).__init__()
+        self.ui = Ui_Dialog()
+        self.ui.setupUi(self)
+        self.set_offsets_callback = set_offsets_callback
+
+        self.ui.AskOffsetButton.accepted.connect(self.on_accept)
+        self.ui.AskOffsetButton.rejected.connect(self.on_reject)
+
+    def on_accept(self):
+        if self.set_offsets_callback:
+            self.set_offsets_callback()
+        self.accept()
+
+    def on_reject(self):
+        self.reject()
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -32,6 +59,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer.setInterval(1000)
         self.video = None
         self.bind_slots()
+        self.ask_for_offsets()
+
+    def ask_for_offsets(self):
+        dialog = AskInitOffset(self.set_offsets)
+        dialog.exec()
 
     # 設定手腕調整值
     def set_offsets(self):
@@ -136,8 +168,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def stop_test(self):
         self.timer.stop()
-        print("STOP!")        
-
+        print("STOP!")
 
     # 連結按鈕
     def bind_slots(self):
