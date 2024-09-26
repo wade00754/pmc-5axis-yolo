@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>795</width>
-    <height>396</height>
+    <width>938</width>
+    <height>549</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,8 +17,8 @@
    <widget class="QLabel" name="input_media">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>50</y>
+      <x>90</x>
+      <y>160</y>
       <width>281</width>
       <height>241</height>
      </rect>
@@ -36,8 +36,8 @@
    <widget class="QLabel" name="output_media">
     <property name="geometry">
      <rect>
-      <x>460</x>
-      <y>50</y>
+      <x>540</x>
+      <y>160</y>
       <width>281</width>
       <height>241</height>
      </rect>
@@ -55,8 +55,8 @@
    <widget class="Line" name="line">
     <property name="geometry">
      <rect>
-      <x>320</x>
-      <y>50</y>
+      <x>380</x>
+      <y>160</y>
       <width>141</width>
       <height>241</height>
      </rect>
@@ -68,8 +68,8 @@
    <widget class="QPushButton" name="button_picture">
     <property name="geometry">
      <rect>
-      <x>120</x>
-      <y>300</y>
+      <x>160</x>
+      <y>450</y>
       <width>141</width>
       <height>51</height>
      </rect>
@@ -81,8 +81,8 @@
    <widget class="QPushButton" name="button_video">
     <property name="geometry">
      <rect>
-      <x>520</x>
-      <y>300</y>
+      <x>600</x>
+      <y>450</y>
       <width>141</width>
       <height>51</height>
      </rect>
@@ -94,8 +94,8 @@
    <widget class="QPushButton" name="button_camera">
     <property name="geometry">
      <rect>
-      <x>320</x>
-      <y>300</y>
+      <x>380</x>
+      <y>450</y>
       <width>141</width>
       <height>51</height>
      </rect>
@@ -128,6 +128,32 @@
     </property>
     <property name="text">
      <string>stop</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Label_HandStop_Status">
+    <property name="geometry">
+     <rect>
+      <x>810</x>
+      <y>10</y>
+      <width>121</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Hand on Stop: N/A</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Label_HandFeed_Status">
+    <property name="geometry">
+     <rect>
+      <x>810</x>
+      <y>40</y>
+      <width>121</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Hand on Feed: N/A</string>
     </property>
    </widget>
   </widget>

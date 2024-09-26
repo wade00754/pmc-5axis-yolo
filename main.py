@@ -60,6 +60,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.video = None
         self.bind_slots()
         self.ask_for_offsets()
+        self.Label_HandStop_Status.setText("Hand on Stop: N/A")
+        self.Label_HandFeed_Status.setText("Hand on Feed: N/A")
 
     def ask_for_offsets(self):
         dialog = AskInitOffset(self.set_offsets)
@@ -109,6 +111,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         print(f"Is hand on stop button: {is_hand_on_stop}")
         print(f"Is hand on feed button: {is_hand_on_feed}")
+        self.Label_HandStop_Status.setText(
+            f"Hand on Stop: {'Yes' if is_hand_on_stop else 'No'}"
+        )
+        self.Label_HandFeed_Status.setText(
+            f"Hand on Feed: {'Yes' if is_hand_on_feed else 'No'}"
+        )
         self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
     # 影片
@@ -138,6 +146,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             )
             print(f"Is hand on stop button: {is_hand_on_stop}")
             print(f"Is hand on feed button: {is_hand_on_feed}")
+            self.Label_HandStop_Status.setText(
+                f"Hand on Stop: {'Yes' if is_hand_on_stop else 'No'}"
+            )
+            self.Label_HandFeed_Status.setText(
+                f"Hand on Feed: {'Yes' if is_hand_on_feed else 'No'}"
+            )
             self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
     # 相機
