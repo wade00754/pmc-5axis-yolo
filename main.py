@@ -58,6 +58,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer = QTimer()
         self.timer.setInterval(1000)
         self.video = None
+        self.aspect_ratio = 16 / 9
         self.bind_slots()
         self.ask_for_offsets()
         self.Label_HandStop_Status.setText("Hand on Stop: N/A")
@@ -99,6 +100,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if file_path[0]:
             file_path = file_path[0]
             print(f"Opened picture: {file_path}")
+
+            img = cv2.imread(file_path)
+            frame_height, frame_width, _ = img.shape
+            self.aspect_ratio = frame_width / frame_height
+            self.update_label_size()
+
             self.test_picture(file_path)
         else:
             print("No picture selected.")
@@ -130,6 +137,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.video = cv2.VideoCapture(file_path)
             video_fps = self.video.get(cv2.CAP_PROP_FPS)
             self.timer.setInterval(1000 / video_fps)
+            self.get_input_ratio()
             self.timer.start()
         else:
             print("No video selected.")
@@ -167,6 +175,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if video_fps == 0:
             video_fps = 60
         self.timer.setInterval(1000 / video_fps)
+        self.get_input_ratio()
         self.timer.start()
 
     def test_camera(self):
@@ -192,6 +201,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.button_offset.clicked.connect(self.set_offsets)
         self.button_stop.clicked.connect(self.stop_test)
         self.timer.timeout.connect(self.test_video)
+
+    # 獲得input長寬比
+    def get_input_ratio(self):
+        frame_width = int(self.video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(self.video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.aspect_ratio = frame_width / frame_height
+        self.update_label_size()
+
+    # 當視窗大小改變時呼叫
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.update_label_size()
+
+    # 左右圖的新大小
+    def update_label_size(self):
+        height = self.size().height()
+        new_width = height * self.aspect_ratio * 0.6
+        new_height = height * 0.6
+        self.input_media.setFixedSize(int(new_width), int(new_height))
+        self.output_media.setFixedSize(int(new_width), int(new_height))
 
 
 if __name__ == "__main__":
