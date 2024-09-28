@@ -13,6 +13,7 @@ from PySide6.QtCore import QTimer, Qt
 from ultralytics import YOLO
 from ui.main_window_ui import Ui_MainWindow
 from ui.ask_offset_ui import Ui_Dialog
+from offset_slider import OffsetSlider
 import utils
 
 
@@ -67,6 +68,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def ask_for_offsets(self):
         dialog = AskInitOffset(self.set_offsets)
         dialog.exec()
+
+    # ~~~~~~~~~~~~~~~~~~~~~~offset_slider~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def open_offset_slider(self):
+        dialog = OffsetSlider(
+            self.offsets["stop_x"],
+            self.offsets["stop_y"],
+            self.offsets["feed_x"],
+            self.offsets["feed_y"],
+        )
+        dialog.offset_changed.connect(self.update_offsets)
+        dialog.cancel_signal.connect(self.reset_offsets)
+        dialog.exec()
+
+    def update_offsets(self, stop_x, stop_y, feed_x, feed_y):
+        self.offsets = {
+            "stop_x": stop_x,
+            "stop_y": stop_y,
+            "feed_x": feed_x,
+            "feed_y": feed_y,
+        }
+        print("Offsets updated:", self.offsets)
+
+    def reset_offsets(self, stop_x, stop_y, feed_x, feed_y):
+        self.offsets = {
+            "stop_x": stop_x,
+            "stop_y": stop_y,
+            "feed_x": feed_x,
+            "feed_y": feed_y,
+        }
+        print("Offsets reset to initial values:", self.offsets)
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     # 設定手腕調整值
     def set_offsets(self):
@@ -198,7 +231,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.button_picture.clicked.connect(self.open_picture)
         self.button_video.clicked.connect(self.open_video)
         self.button_camera.clicked.connect(self.open_camera)
-        self.button_offset.clicked.connect(self.set_offsets)
+        self.button_offset.clicked.connect(self.open_offset_slider)
         self.button_stop.clicked.connect(self.stop_test)
         self.timer.timeout.connect(self.test_video)
 
