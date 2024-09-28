@@ -1,6 +1,9 @@
-import cv2
-from ultralytics import YOLO
 import random
+from typing import Any
+
+import cv2
+from ultralytics.engine.model import Model
+from ultralytics.engine.results import Results
 
 
 # 定義一個函數來生成隨機顏色
@@ -17,7 +20,9 @@ def generate_colors(num_classes):
 
 
 # 測試手部是否在按鈕上
-def test_hand_on_button(pose_results, object_results, offsets):
+def test_safe(
+    pose_results: Results, object_results: Results, offsets: dict
+) -> tuple[bool, bool, bool]:
     # 獲取關鍵點 索引為: 9 是右手腕，10 是左手腕（根據 COCO 的姿態標註）
     keypoints = pose_results[0].keypoints.xy[0]
 
@@ -28,10 +33,13 @@ def test_hand_on_button(pose_results, object_results, offsets):
     # 初始化 Stop 和 Feed 按鈕的範圍變數及手是否在按鈕上的變數
     stop_region = None
     feed_region = None
+    knife_region = None
+    base_region = None
     is_hand_on_stop = False
     is_hand_on_feed = False
+    is_knife_base_collided = False
 
-    # 遍歷每一個偵測結果來找到 stop 和 feed 的範圍
+    # 遍歷每一個偵測結果來找到 stop、feed、knife 和 base 的範圍
     for object in object_results[0].boxes:
         # 獲取偵測框的座標
         x1, y1, x2, y2 = map(int, object.xyxy[0].tolist())
@@ -50,10 +58,18 @@ def test_hand_on_button(pose_results, object_results, offsets):
         if class_name == "feed":
             feed_region = {"x_min": x1, "x_max": x2, "y_min": y1, "y_max": y2}
 
+        # 如果是 Knife，記錄其範圍
+        if class_name == "knife":
+            knife_region = {"x_min": x1, "x_max": x2, "y_min": y1, "y_max": y2}
+
+        # 如果是 Base，記錄其範圍
+        if class_name == "base":
+            base_region = {"x_min": x1, "x_max": x2, "y_min": y1, "y_max": y2}
+
     # 判斷左手是否在 Stop 按鈕上
     if stop_region:
-        left_hand_x = left_hand.cpu().numpy()[0] + offsets["stop_x"]
-        left_hand_y = left_hand.cpu().numpy()[1] + offsets["stop_y"]
+        left_hand_x = left_hand.cpu().numpy()[0] + offsets.get("stop_x", 0)
+        left_hand_y = left_hand.cpu().numpy()[1] + offsets.get("stop_y", 0)
         is_hand_on_stop = (
             stop_region["x_min"] <= left_hand_x <= stop_region["x_max"]
             and stop_region["y_min"] <= left_hand_y <= stop_region["y_max"]
@@ -61,23 +77,26 @@ def test_hand_on_button(pose_results, object_results, offsets):
 
     # 判斷右手是否在 Feed 按鈕上
     if feed_region:
-        right_hand_x = right_hand.cpu().numpy()[0] + offsets["feed_x"]
-        right_hand_y = right_hand.cpu().numpy()[1] + offsets["feed_y"]
+        right_hand_x = right_hand.cpu().numpy()[0] + offsets.get("feed_x", 0)
+        right_hand_y = right_hand.cpu().numpy()[1] + offsets.get("feed_y", 0)
         is_hand_on_feed = (
             feed_region["x_min"] <= right_hand_x <= feed_region["x_max"]
             and feed_region["y_min"] <= right_hand_y <= feed_region["y_max"]
         )
 
-    return is_hand_on_stop, is_hand_on_feed
+    # 判斷 Knife 是否碰到 Base
+    if knife_region and base_region:
+        is_knife_base_collided = (
+            knife_region["y_max"] >= base_region["y_min"] - 5
+        )  # 5 pixels tolerance
 
-
-def test_knife_base_collision(pose_results, object_results, offsets):
-    is_knife_base_collision = False
-    return is_knife_base_collision
+    return is_hand_on_stop, is_hand_on_feed, is_knife_base_collided
 
 
 # 測試單張影像
-def predict_single(image, pose_model, object_model, offsets):
+def predict_single(
+    image, pose_model: Model, object_model: Model, offsets: dict
+) -> tuple[Any, bool, bool, bool]:
     # # 讀取影像
     # image_path = cv2.imread(image_path)
 
@@ -160,11 +179,11 @@ def predict_single(image, pose_model, object_model, offsets):
             1,
         )
 
-    is_hand_on_stop, is_hand_on_feed = test_hand_on_button(
+    is_hand_on_stop, is_hand_on_feed, is_knife_base_collided = test_safe(
         pose_results, object_results, offsets
     )
 
-    return combined_frame, is_hand_on_stop, is_hand_on_feed
+    return combined_frame, is_hand_on_stop, is_hand_on_feed, is_knife_base_collided
 
 
 # # ------------------------------
