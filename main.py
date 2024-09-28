@@ -1,20 +1,22 @@
 import sys
+
 import cv2
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
-    QMainWindow,
-    QFileDialog,
     QDialog,
-    QWidget,
     QDialogButtonBox,
+    QFileDialog,
+    QMainWindow,
+    QWidget,
 )
-from PySide6.QtGui import QPixmap, QImage
-from PySide6.QtCore import QTimer, Qt
 from ultralytics import YOLO
-from ui.main_window_ui import Ui_MainWindow
-from ui.ask_offset_ui import Ui_Dialog
-from offset_slider import OffsetSlider
+
 import utils
+from offset_slider import OffsetSlider
+from ui.ask_offset_ui import Ui_Dialog
+from ui.main_window_ui import Ui_MainWindow
 
 
 def convert2QImage(img):
@@ -123,6 +125,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             to_adj, self.offsets, file_path, self.pose_model, self.object_model
         )
 
+    def test_single(self, file):
+        image, is_hand_on_stop, is_hand_on_feed, is_knife_base_collided = (
+            utils.predict_single(file, self.pose_model, self.object_model, self.offsets)
+        )
+        print(f"Is hand on stop button: {is_hand_on_stop}")
+        print(f"Is hand on feed button: {is_hand_on_feed}")
+        print(f"Does knife collide with base: {is_knife_base_collided}")
+        self.Label_HandStop_Status.setText(
+            f"Hand on Stop: {'Yes' if is_hand_on_stop else 'No'}"
+        )
+        self.Label_HandFeed_Status.setText(
+            f"Hand on Feed: {'Yes' if is_hand_on_feed else 'No'}"
+        )
+
+        return image
+
     # 圖片開啟
     def open_picture(self):
         self.timer.stop()
@@ -146,17 +164,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def test_picture(self, file_path):
         self.input_media.setPixmap(QPixmap(file_path))
         print("Testing picture...")
-        image, is_hand_on_stop, is_hand_on_feed = utils.predict_single(
-            file_path, self.pose_model, self.object_model, self.offsets
-        )
-        print(f"Is hand on stop button: {is_hand_on_stop}")
-        print(f"Is hand on feed button: {is_hand_on_feed}")
-        self.Label_HandStop_Status.setText(
-            f"Hand on Stop: {'Yes' if is_hand_on_stop else 'No'}"
-        )
-        self.Label_HandFeed_Status.setText(
-            f"Hand on Feed: {'Yes' if is_hand_on_feed else 'No'}"
-        )
+        image = self.test_single(file_path)
         self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
     # 影片
@@ -182,17 +190,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             self.input_media.setPixmap(QPixmap.fromImage(convert2QImage(frame)))
             print("Testing video...")
-            image, is_hand_on_stop, is_hand_on_feed = utils.predict_single(
-                frame, self.pose_model, self.object_model, self.offsets
-            )
-            print(f"Is hand on stop button: {is_hand_on_stop}")
-            print(f"Is hand on feed button: {is_hand_on_feed}")
-            self.Label_HandStop_Status.setText(
-                f"Hand on Stop: {'Yes' if is_hand_on_stop else 'No'}"
-            )
-            self.Label_HandFeed_Status.setText(
-                f"Hand on Feed: {'Yes' if is_hand_on_feed else 'No'}"
-            )
+            image = self.test_single(frame)
             self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
     # 相機
