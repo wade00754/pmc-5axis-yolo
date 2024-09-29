@@ -24,7 +24,7 @@ class Ui_Dialog(object):
     def setupUi(self, Dialog):
         if not Dialog.objectName():
             Dialog.setObjectName(u"Dialog")
-        Dialog.resize(400, 300)
+        Dialog.resize(407, 300)
         self.gridLayout = QGridLayout(Dialog)
         self.gridLayout.setObjectName(u"gridLayout")
         self.verticalLayout_5 = QVBoxLayout()
@@ -229,22 +229,27 @@ class Ui_Dialog(object):
         self.verticalLayout_5.addLayout(self.verticalLayout)
 
 
-        self.gridLayout.addLayout(self.verticalLayout_5, 0, 0, 1, 3)
+        self.gridLayout.addLayout(self.verticalLayout_5, 0, 0, 1, 4)
 
-        self.horizontalSpacer_9 = QSpacerItem(104, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.Button_Offset_Picture = QPushButton(Dialog)
+        self.Button_Offset_Picture.setObjectName(u"Button_Offset_Picture")
 
-        self.gridLayout.addItem(self.horizontalSpacer_9, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.Button_Offset_Picture, 1, 0, 1, 1)
+
+        self.horizontalSpacer_9 = QSpacerItem(30, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout.addItem(self.horizontalSpacer_9, 1, 1, 1, 1)
 
         self.Offset_Slider_Button = QDialogButtonBox(Dialog)
         self.Offset_Slider_Button.setObjectName(u"Offset_Slider_Button")
         self.Offset_Slider_Button.setOrientation(Qt.Orientation.Horizontal)
         self.Offset_Slider_Button.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
 
-        self.gridLayout.addWidget(self.Offset_Slider_Button, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.Offset_Slider_Button, 1, 2, 1, 1)
 
-        self.horizontalSpacer_10 = QSpacerItem(104, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.horizontalSpacer_10 = QSpacerItem(110, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
-        self.gridLayout.addItem(self.horizontalSpacer_10, 1, 2, 1, 1)
+        self.gridLayout.addItem(self.horizontalSpacer_10, 1, 3, 1, 1)
 
 
         self.retranslateUi(Dialog)
@@ -268,5 +273,6 @@ class Ui_Dialog(object):
         self.Feed_Y_Label.setText(QCoreApplication.translate("Dialog", u"Feed_Y :", None))
         self.Feed_Y_MinusButton.setText(QCoreApplication.translate("Dialog", u"-", None))
         self.Feed_Y_PlusButton.setText(QCoreApplication.translate("Dialog", u"+", None))
+        self.Button_Offset_Picture.setText(QCoreApplication.translate("Dialog", u"\u5716\u7247\u8a2d\u5b9a", None))
     # retranslateUi
 

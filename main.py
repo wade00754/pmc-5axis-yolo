@@ -1,7 +1,7 @@
 import sys
 
 import cv2
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
@@ -47,6 +47,8 @@ class AskInitOffset(QDialog):
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     # 啟動
+    NowOffset = Signal(float, float, float, float)
+
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi(self)
@@ -61,11 +63,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer = QTimer()
         self.timer.setInterval(1000)
         self.video = None
+        self.dialog = None
         self.aspect_ratio = 16 / 9
         self.bind_slots()
         self.ask_for_offsets()
         self.Label_HandStop_Status.setText("Hand on Stop: N/A")
         self.Label_HandFeed_Status.setText("Hand on Feed: N/A")
+        self.Label_KnifeBaseCollid_status.setText("Knife Base Collided: N/A")
 
     def ask_for_offsets(self):
         dialog = AskInitOffset(self.set_offsets)
@@ -73,15 +77,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # ~~~~~~~~~~~~~~~~~~~~~~offset_slider~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def open_offset_slider(self):
-        dialog = OffsetSlider(
+        self.dialog = OffsetSlider(
             self.offsets["stop_x"],
             self.offsets["stop_y"],
             self.offsets["feed_x"],
             self.offsets["feed_y"],
         )
-        dialog.offset_changed.connect(self.update_offsets)
-        dialog.cancel_signal.connect(self.reset_offsets)
-        dialog.exec()
+        self.dialog.offset_changed.connect(self.update_offsets)
+        self.dialog.cancel_signal.connect(self.reset_offsets)
+        self.dialog.PictureSetCalled.connect(self.closedialog)
+        self.dialog.exec()
 
     def update_offsets(self, stop_x, stop_y, feed_x, feed_y):
         self.offsets = {
@@ -100,6 +105,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             "feed_y": feed_y,
         }
         print("Offsets reset to initial values:", self.offsets)
+
+    def closedialog(self):
+        self.dialog.close()
+        self.set_offsets()
+        self.open_offset_slider()
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -137,6 +147,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         self.Label_HandFeed_Status.setText(
             f"Hand on Feed: {'Yes' if is_hand_on_feed else 'No'}"
+        )
+        self.Label_KnifeBaseCollid_status.setText(
+            f"Knife Base Collided: {'Yes' if is_knife_base_collided else 'No'}"
         )
 
         return image
@@ -208,17 +221,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer.setInterval(1000 / video_fps)
         self.get_input_ratio()
         self.timer.start()
-
-    def test_camera(self):
-        ret, frame = self.video.read()
-        if not ret:
-            self.timer.stop()
-        else:
-            self.input_media.setPixmap(QPixmap.fromImage(convert2QImage(frame)))
-            print("Predecting camera...")
-            results = self.model(frame)
-            image = results[0].plot()
-            self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
     def stop_test(self):
         self.timer.stop()
