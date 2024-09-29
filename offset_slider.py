@@ -6,6 +6,7 @@ from ui.offset_slider_ui import Ui_Dialog
 class OffsetSlider(QDialog, Ui_Dialog):
     offset_changed = Signal(float, float, float, float)
     cancel_signal = Signal(float, float, float, float)
+    PictureSetCalled = Signal()
 
     def __init__(self, initial_stop_x, initial_stop_y, initial_feed_x, initial_feed_y):
         super().__init__()
@@ -62,6 +63,7 @@ class OffsetSlider(QDialog, Ui_Dialog):
 
         self.Offset_Slider_Button.accepted.connect(self.accept)
         self.Offset_Slider_Button.rejected.connect(self.cancel)
+        self.Button_Offset_Picture.clicked.connect(self.PictureSetCall)
 
     # 透過按鈕改變過程
     def adjust_slider(self, slider, increment):
@@ -79,6 +81,9 @@ class OffsetSlider(QDialog, Ui_Dialog):
         self.Feed_X_Label.setText(f"Feed_X: {feed_x}")
         self.Feed_Y_Label.setText(f"Feed_Y: {feed_y}")
         self.offset_changed.emit(stop_x, stop_y, feed_x, feed_y)
+
+    def PictureSetCall(self):
+        self.PictureSetCalled.emit()
 
     def cancel(self):
         self.cancel_signal.emit(
