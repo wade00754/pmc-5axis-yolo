@@ -1,5 +1,3 @@
-def f(a: int, b: int) -> int:
-    return a + b
-
-
-print(f("t", 2))
+a = []
+if a is None:
+    print("a is empty")

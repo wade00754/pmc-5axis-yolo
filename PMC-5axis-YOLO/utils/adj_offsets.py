@@ -64,7 +64,7 @@ def adj_offsets(
     else:
         print(
             f"Adjusted offsets:",
-            " ".join(f"[{value}: {offsets[value]:.3f}]" for value in offsets),
+            " ".join(f"[{key}: {offsets[key]:.3f}]" for key in offsets),
         )
 
     return offsets
