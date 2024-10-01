@@ -34,7 +34,7 @@ def test_safe(
     keypoints = pose_results[0].keypoints.xy[0]
 
     # 取得右手與左手的座標 (x, y)
-    if keypoints.numel() == 0:
+    if keypoints.numel() == 0:  # 沒有偵測到人
         person = False
     else:
         person = True
@@ -79,7 +79,7 @@ def test_safe(
 
     # 判斷左手是否在 Stop 按鈕上
     if stop_region and person:
-        if sum(left_hand.cpu().numpy()) == 0:
+        if sum(left_hand.cpu().numpy()) == 0:  # 沒有偵測到左手
             is_hand_on_stop = SafeState.UNDETECTED
         else:
             left_hand_x = left_hand.cpu().numpy()[0] + offsets.get("stop_x", 0)
@@ -93,7 +93,7 @@ def test_safe(
 
     # 判斷右手是否在 Feed 按鈕上
     if feed_region and person:
-        if sum(right_hand.cpu().numpy()) == 0:
+        if sum(right_hand.cpu().numpy()) == 0:  # 沒有偵測到右手
             is_hand_on_feed = SafeState.UNDETECTED
         else:
             right_hand_x = right_hand.cpu().numpy()[0] + offsets.get("feed_x", 0)
@@ -115,7 +115,7 @@ def test_safe(
                 or base_region["x_min"] <= knife_region["x_max"] <= base_region["x_max"]
             )
             else SafeState.NO
-        )  # used to have 5 pixels tolerance
+        )
 
     return is_hand_on_stop, is_hand_on_feed, is_knife_base_collided
 
@@ -190,16 +190,23 @@ def predict_single(
             label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1
         )
 
+        # 調整文字背景的位置以避免超出影像範圍
+        text_y1 = y1 - text_height - 4 if y1 - text_height - 4 > 0 else y1
+
         # 繪製文字背景
         cv2.rectangle(
-            combined_frame, (x1, y1 - text_height - 4), (x1 + text_width, y1), color, -1
+            combined_frame,
+            (x1, text_y1),
+            (x1 + text_width, text_y1 + text_height + 4),
+            color,
+            -1,
         )
 
         # 在框架上繪製文字
         cv2.putText(
             combined_frame,
             label,
-            (x1, y1 - 2),
+            (x1, text_y1 + text_height + 2),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.5,
             (255, 255, 255),
