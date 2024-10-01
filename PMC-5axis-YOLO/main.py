@@ -1,6 +1,8 @@
 import sys
 
 import cv2
+import utils
+from offset_slider import OffsetSlider
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import (
@@ -11,12 +13,9 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
 )
-from ultralytics import YOLO
-
-import utils
-from offset_slider import OffsetSlider
 from ui.ask_offset_ui import Ui_Dialog
 from ui.main_window_ui import Ui_MainWindow
+from ultralytics import YOLO
 
 
 def convert2QImage(img):
@@ -95,7 +94,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             "feed_x": feed_x,
             "feed_y": feed_y,
         }
-        print("Offsets updated:", self.offsets)
+        print(
+            "Offsets updated:",
+            " ".join(f"[{key}: {self.offsets[key]:.3f}]" for key in self.offsets),
+        )
 
     def reset_offsets(self, stop_x, stop_y, feed_x, feed_y):
         self.offsets = {
@@ -104,7 +106,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             "feed_x": feed_x,
             "feed_y": feed_y,
         }
-        print("Offsets reset to initial values:", self.offsets)
+        print(
+            "Offsets reset to initial values:",
+            " ".join(f"[{key}: {self.offsets[key]:.3f}]" for key in self.offsets),
+        )
 
     def closedialog(self):
         self.dialog.close()
@@ -139,17 +144,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         image, is_hand_on_stop, is_hand_on_feed, is_knife_base_collided = (
             utils.predict_single(file, self.pose_model, self.object_model, self.offsets)
         )
-        print(f"Is hand on stop button: {is_hand_on_stop}")
-        print(f"Is hand on feed button: {is_hand_on_feed}")
-        print(f"Does knife collide with base: {is_knife_base_collided}")
-        self.Label_HandStop_Status.setText(
-            f"Hand on Stop: {'Yes' if is_hand_on_stop else 'No'}"
-        )
-        self.Label_HandFeed_Status.setText(
-            f"Hand on Feed: {'Yes' if is_hand_on_feed else 'No'}"
-        )
+        print(f"Is hand on stop button: {is_hand_on_stop.name}")
+        print(f"Is hand on feed button: {is_hand_on_feed.name}")
+        print(f"Does knife collide with base: {is_knife_base_collided.name}")
+        self.Label_HandStop_Status.setText(f"Hand on Stop: {is_hand_on_stop.name}")
+        self.Label_HandFeed_Status.setText(f"Hand on Feed: {is_hand_on_feed.name}")
         self.Label_KnifeBaseCollid_status.setText(
-            f"Knife Base Collided: {'Yes' if is_knife_base_collided else 'No'}"
+            f"Knife Base Collided: {is_knife_base_collided.name}"
         )
 
         return image
