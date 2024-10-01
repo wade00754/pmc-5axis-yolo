@@ -34,7 +34,7 @@ def test_safe(
     keypoints = pose_results[0].keypoints.xy[0]
 
     # 取得右手與左手的座標 (x, y)
-    if len(keypoints) == 0:
+    if keypoints.numel() == 0:
         person = False
     else:
         person = True
@@ -79,25 +79,31 @@ def test_safe(
 
     # 判斷左手是否在 Stop 按鈕上
     if stop_region and person:
-        left_hand_x = left_hand.cpu().numpy()[0] + offsets.get("stop_x", 0)
-        left_hand_y = left_hand.cpu().numpy()[1] + offsets.get("stop_y", 0)
-        is_hand_on_stop = (
-            SafeState.YES
-            if stop_region["x_min"] <= left_hand_x <= stop_region["x_max"]
-            and stop_region["y_min"] <= left_hand_y <= stop_region["y_max"]
-            else SafeState.NO
-        )
+        if sum(left_hand.cpu().numpy()) == 0:
+            is_hand_on_stop = SafeState.UNDETECTED
+        else:
+            left_hand_x = left_hand.cpu().numpy()[0] + offsets.get("stop_x", 0)
+            left_hand_y = left_hand.cpu().numpy()[1] + offsets.get("stop_y", 0)
+            is_hand_on_stop = (
+                SafeState.YES
+                if stop_region["x_min"] <= left_hand_x <= stop_region["x_max"]
+                and stop_region["y_min"] <= left_hand_y <= stop_region["y_max"]
+                else SafeState.NO
+            )
 
     # 判斷右手是否在 Feed 按鈕上
     if feed_region and person:
-        right_hand_x = right_hand.cpu().numpy()[0] + offsets.get("feed_x", 0)
-        right_hand_y = right_hand.cpu().numpy()[1] + offsets.get("feed_y", 0)
-        is_hand_on_feed = (
-            SafeState.YES
-            if feed_region["x_min"] <= right_hand_x <= feed_region["x_max"]
-            and feed_region["y_min"] <= right_hand_y <= feed_region["y_max"]
-            else SafeState.NO
-        )
+        if sum(right_hand.cpu().numpy()) == 0:
+            is_hand_on_feed = SafeState.UNDETECTED
+        else:
+            right_hand_x = right_hand.cpu().numpy()[0] + offsets.get("feed_x", 0)
+            right_hand_y = right_hand.cpu().numpy()[1] + offsets.get("feed_y", 0)
+            is_hand_on_feed = (
+                SafeState.YES
+                if feed_region["x_min"] <= right_hand_x <= feed_region["x_max"]
+                and feed_region["y_min"] <= right_hand_y <= feed_region["y_max"]
+                else SafeState.NO
+            )
 
     # 判斷 Knife 是否碰到 Base
     if knife_region and base_region:
@@ -130,7 +136,7 @@ def predict_single(
     # ------------------------------
     # 使用 YOLOv8n-pose 進行姿態估計
     print("Predicting pose...")
-    pose_results = pose_model(image)
+    pose_results = pose_model(image, conf=0.4)
 
     # 繪製姿態估計結果
     pose_annotated_frame = pose_results[0].plot()
