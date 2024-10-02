@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Any
 
 import cv2
-from ultralytics.engine.model import Model
+from ultralytics import YOLO
 from ultralytics.engine.results import Results
 
 
@@ -28,7 +28,7 @@ def generate_colors(num_classes):
 
 # 測試手部是否在按鈕上
 def test_safe(
-    pose_results: Results, object_results: Results, offsets: dict
+    pose_results: list[Results], object_results: list[Results], offsets: dict
 ) -> tuple[SafeState, SafeState, SafeState]:
     # 獲取關鍵點 索引為: 9 是右手腕，10 是左手腕（根據 COCO 的姿態標註）
     keypoints = pose_results[0].keypoints.xy[0]
@@ -122,7 +122,7 @@ def test_safe(
 
 # 測試單張影像
 def predict_single(
-    image, pose_model: Model, object_model: Model, offsets: dict
+    image, pose_model: YOLO, object_model: YOLO, offsets: dict
 ) -> tuple[Any, SafeState, SafeState, SafeState]:
     # # 讀取影像
     # image_path = cv2.imread(image_path)
@@ -136,7 +136,7 @@ def predict_single(
     # ------------------------------
     # 使用 YOLOv8n-pose 進行姿態估計
     print("Predicting pose...")
-    pose_results = pose_model(image, conf=0.4)
+    pose_results = pose_model.predict(image, conf=0.4)
 
     # 繪製姿態估計結果
     pose_annotated_frame = pose_results[0].plot()
@@ -146,14 +146,14 @@ def predict_single(
     # ------------------------------
     # 使用你自訓練的物件偵測模型進行偵測
     print("Predicting objects...")
-    object_results = object_model(image)
+    object_results = object_model.predict(image)
 
     # 獲取類別數量（假設類別編號從 0 開始連續編號）
-    num_classes = len(object_model.model.names)
+    num_classes = len(object_model.names)
     colors = generate_colors(num_classes)
 
     # 獲取類別名稱
-    class_names = object_model.model.names
+    class_names = object_model.names
 
     # 複製姿態估計的結果框架以進行繪製
     combined_frame = pose_annotated_frame.copy()
@@ -221,7 +221,7 @@ def predict_single(
 
 
 def predict_multiple(
-    images: list, pose_model: Model, object_model: Model, offsets: dict
+    images: list, pose_model: YOLO, object_model: YOLO, offsets: dict
 ) -> tuple[list, SafeState, SafeState, SafeState]:
     combined_frames = []
     is_hand_on_stop = SafeState.UNDETECTED

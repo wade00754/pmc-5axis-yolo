@@ -22,7 +22,7 @@ def convert2QImage(img):
     height, width, channel = img.shape
     bytes_per_line = width * channel
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    return QImage(img.data, width, height, bytes_per_line, QImage.Format_RGB888)
+    return QImage(img.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
 
 
 class AskInitOffset(QDialog):
