@@ -1,6 +1,7 @@
-from PySide6.QtWidgets import QFileDialog
-import utils
 from PySide6.QtCore import QTimer
+from PySide6.QtWidgets import QFileDialog
+
+from .utils import *
 
 
 class SetOffset:
@@ -30,7 +31,7 @@ class SetOffset:
                 to_adj = False
                 print("No picture selected.")
 
-        self.offsets = utils.adj_offsets(
+        self.offsets = adj_offsets(
             to_adj, self.offsets, file_path, self.pose_model, self.object_model
         )
         return self.offsets

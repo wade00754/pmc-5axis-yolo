@@ -1,8 +1,6 @@
 import sys
 
 import cv2
-import utils
-from offset_slider import OffsetSlider
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import (
@@ -13,9 +11,12 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
 )
-from ui.ask_offset_ui import Ui_Dialog
-from ui.main_window_ui import Ui_MainWindow
 from ultralytics import YOLO
+
+from .offset_slider import OffsetSlider
+from .ui.ask_offset_ui import Ui_Dialog
+from .ui.main_window_ui import Ui_MainWindow
+from .utils import *
 
 
 def convert2QImage(img):
@@ -136,13 +137,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 to_adj = False
                 print("No picture selected.")
-        self.offsets = utils.adj_offsets(
+        self.offsets = adj_offsets(
             to_adj, self.offsets, file_path, self.pose_model, self.object_model
         )
 
     def test_single(self, file):
         image, is_hand_on_stop, is_hand_on_feed, is_knife_base_collided = (
-            utils.predict_single(file, self.pose_model, self.object_model, self.offsets)
+            predict_single(file, self.pose_model, self.object_model, self.offsets)
         )
         print(f"Is hand on stop button: {is_hand_on_stop.name}")
         print(f"Is hand on feed button: {is_hand_on_feed.name}")
@@ -255,12 +256,3 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         new_height = height * 0.6
         self.input_media.setFixedSize(int(new_width), int(new_height))
         self.output_media.setFixedSize(int(new_width), int(new_height))
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-
-    window = MainWindow()
-    window.show()
-
-    app.exec()

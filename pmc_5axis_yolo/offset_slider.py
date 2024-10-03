@@ -1,6 +1,7 @@
-from PySide6.QtWidgets import QDialog
 from PySide6.QtCore import Signal
-from ui.offset_slider_ui import Ui_Dialog
+from PySide6.QtWidgets import QDialog
+
+from .ui.offset_slider_ui import Ui_Dialog
 
 
 class OffsetSlider(QDialog, Ui_Dialog):
@@ -97,6 +98,7 @@ class OffsetSlider(QDialog, Ui_Dialog):
 
 if __name__ == "__main__":
     import sys
+
     from PySide6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
