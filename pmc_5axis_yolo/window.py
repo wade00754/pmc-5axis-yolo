@@ -61,8 +61,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             "feed_y": -20,
         }
         self.timer = QTimer()
+
+        self.timer2 = QTimer()
         self.timer.setInterval(1000)
         self.video = None
+        self.video2 = None
+        self.camera_on = 0
+
         self.dialog = None
         self.aspect_ratio = 16 / 9
         self.bind_slots()
@@ -158,7 +163,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # 圖片開啟
     def open_picture(self):
+
+        self.camera_on = 0
         self.timer.stop()
+        self.timer2.stop()
+
         print("Selecting a picture...")
         file_path = QFileDialog.getOpenFileName(
             self, dir="images", filter="*.jpg;*.png;*.jpeg"
@@ -184,7 +193,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # 影片
     def open_video(self):
+
+        self.camera_on = 0
         self.timer.stop()
+        self.timer2.stop()
+
         print("Selecting a video...")
         file_path = QFileDialog.getOpenFileName(self, dir="images", filter="*.mp4")
         if file_path[0]:
@@ -203,13 +216,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not ret:
             self.timer.stop()
         else:
-            self.input_media.setPixmap(QPixmap.fromImage(convert2QImage(frame)))
+
+            if self.camera_on == 0:
+                self.input_media.setPixmap(QPixmap.fromImage(convert2QImage(frame)))
+
             print("Testing video...")
             image = self.test_single(frame)
             self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
+
+    def test_camera2(self):
+        ret, frame = self.video2.read()
+        if not ret:
+            self.timer2.stop()
+        else:
+            print("Testing video2...")
+            image = self.test_single(frame)
+            self.input_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
+
     # 相機
     def open_camera(self):
+        self.camera_on = 1
+
         self.timer.stop()
         print("camera open")
         camera_num = 0
@@ -224,6 +252,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.get_input_ratio()
         self.timer.start()
 
+
+    def open_camera2(self):
+        print("Opening second camera...")
+        camera_num = 1  # 第二个摄像头
+        self.video2 = cv2.VideoCapture(camera_num)
+        self.timer2.start()
+        if not self.video2.isOpened():
+            print("No second camera opening.")
+            return
+
+
     def stop_test(self):
         self.timer.stop()
         print("STOP!")
@@ -233,9 +272,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.button_picture.clicked.connect(self.open_picture)
         self.button_video.clicked.connect(self.open_video)
         self.button_camera.clicked.connect(self.open_camera)
+
+        self.button_camera.clicked.connect(self.open_camera2)
         self.button_offset.clicked.connect(self.open_offset_slider)
         self.button_stop.clicked.connect(self.stop_test)
         self.timer.timeout.connect(self.test_video)
+        self.timer2.timeout.connect(self.test_camera2)
+
 
     # 獲得input長寬比
     def get_input_ratio(self):
