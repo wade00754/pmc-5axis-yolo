@@ -3,6 +3,7 @@ from enum import Enum
 from typing import Any
 
 import cv2
+from cv2.typing import MatLike
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
 
@@ -122,8 +123,8 @@ def predict_safe(
 
 # 測試單張影像
 def predict_single(
-    image, pose_model: YOLO, object_model: YOLO, offsets: dict
-) -> tuple[Any, SafeState, SafeState, SafeState]:
+    image: str | MatLike, pose_model: YOLO, object_model: YOLO, offsets: dict
+) -> tuple[MatLike, SafeState, SafeState, SafeState]:
     # # 讀取影像
     # image_path = cv2.imread(image_path)
 
@@ -221,8 +222,8 @@ def predict_single(
 
 
 def predict_multiple(
-    images: list, pose_model: YOLO, object_model: YOLO, offsets: dict
-) -> tuple[list, SafeState, SafeState, SafeState]:
+    images: list[str | MatLike], pose_model: YOLO, object_model: YOLO, offsets: dict
+) -> tuple[list[MatLike], SafeState, SafeState, SafeState]:
     combined_frames = []
     is_hand_on_stop = SafeState.UNDETECTED
     is_hand_on_feed = SafeState.UNDETECTED

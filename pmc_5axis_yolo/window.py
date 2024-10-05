@@ -1,4 +1,5 @@
 import cv2
+from cv2.typing import MatLike
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import (
@@ -11,10 +12,15 @@ from PySide6.QtWidgets import (
 )
 from ultralytics import YOLO
 
-from .offset_slider import OffsetSlider
 from .ui.ask_offset_ui import Ui_Dialog
 from .ui.main_window_ui import Ui_MainWindow
-from .utils import *
+from .utils import (
+    OffsetSlider,
+    SafeState,
+    adj_offsets,
+    predict_multiple,
+    predict_single,
+)
 
 
 def convert2QImage(img):
@@ -144,10 +150,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             to_adj, self.offsets, file_path, self.pose_model, self.object_model
         )
 
-    def test_single(self, file):
-        image, is_hand_on_stop, is_hand_on_feed, is_knife_base_collided = (
-            predict_single(file, self.pose_model, self.object_model, self.offsets)
-        )
+    def test(
+        self, file: str | MatLike | list[str | MatLike]
+    ) -> MatLike | list[MatLike]:
+        """
+        Test an image or a single video frame and return the result.
+
+        Args:
+            file (str | MatLike | list[str | MatLike]): The file path or the image to test. It can also be a list of file paths or images.
+
+        Returns:
+            MatLike | list[MatLike]: The processed image or a list of processed images.
+        """
+        if isinstance(file, list):
+            image, is_hand_on_stop, is_hand_on_feed, is_knife_base_collided = (
+                predict_multiple(file, self.pose_model, self.object_model, self.offsets)
+            )
+        else:
+            image, is_hand_on_stop, is_hand_on_feed, is_knife_base_collided = (
+                predict_single(file, self.pose_model, self.object_model, self.offsets)
+            )
         print(f"Is hand on stop button: {is_hand_on_stop.name}")
         print(f"Is hand on feed button: {is_hand_on_feed.name}")
         print(f"Does knife collide with base: {is_knife_base_collided.name}")
@@ -186,7 +208,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def test_picture(self, file_path):
         self.input_media.setPixmap(QPixmap(file_path))
         print("Testing picture...")
-        image = self.test_single(file_path)
+        image = self.test(file_path)
         self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
     # 影片
@@ -219,7 +241,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.input_media.setPixmap(QPixmap.fromImage(convert2QImage(frame)))
 
             print("Testing video...")
-            image = self.test_single(frame)
+            image = self.test(frame)
             self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
     def test_camera2(self):
@@ -228,7 +250,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.timer2.stop()
         else:
             print("Testing video2...")
-            image = self.test_single(frame)
+            image = self.test(frame)
             self.input_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
     # 相機
