@@ -27,7 +27,7 @@ def generate_colors(num_classes):
 
 
 # 測試手部是否在按鈕上
-def test_safe(
+def predict_safe(
     pose_results: list[Results], object_results: list[Results], offsets: dict
 ) -> tuple[SafeState, SafeState, SafeState]:
     # 獲取關鍵點 索引為: 9 是右手腕，10 是左手腕（根據 COCO 的姿態標註）
@@ -213,7 +213,7 @@ def predict_single(
             1,
         )
 
-    is_hand_on_stop, is_hand_on_feed, is_knife_base_collided = test_safe(
+    is_hand_on_stop, is_hand_on_feed, is_knife_base_collided = predict_safe(
         pose_results, object_results, offsets
     )
 

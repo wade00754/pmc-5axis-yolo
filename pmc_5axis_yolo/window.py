@@ -1,5 +1,3 @@
-import sys
-
 import cv2
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QImage, QPixmap
@@ -60,8 +58,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             "feed_x": 45,
             "feed_y": -20,
         }
-        self.timer = QTimer()
 
+        self.timer = QTimer()
         self.timer2 = QTimer()
         self.timer.setInterval(1000)
         self.video = None
@@ -127,7 +125,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # 設定手腕調整值
     def set_offsets(self):
         self.timer.stop()
-        # TODO: implement adj_offsets UI
+        self.timer2.stop()
         # TODO: objects範圍寬限值
         to_adj = True
         file_path = None
@@ -163,8 +161,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # 圖片開啟
     def open_picture(self):
-
         self.camera_on = 0
+
         self.timer.stop()
         self.timer2.stop()
 
@@ -193,8 +191,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # 影片
     def open_video(self):
-
         self.camera_on = 0
+
         self.timer.stop()
         self.timer2.stop()
 
@@ -224,7 +222,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             image = self.test_single(frame)
             self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
-
     def test_camera2(self):
         ret, frame = self.video2.read()
         if not ret:
@@ -239,11 +236,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.camera_on = 1
 
         self.timer.stop()
-        print("camera open")
+        print("Turning on the camera...")
         camera_num = 0
         self.video = cv2.VideoCapture(camera_num)
         if not self.video.isOpened():
-            print("No camera opening.")
+            print("No camera turned on.")
             return
         video_fps = self.video.get(cv2.CAP_PROP_FPS)
         if video_fps == 0:
@@ -252,19 +249,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.get_input_ratio()
         self.timer.start()
 
-
     def open_camera2(self):
-        print("Opening second camera...")
+        self.timer2.stop()
+        print("Turning on second camera...")
         camera_num = 1  # 第二个摄像头
         self.video2 = cv2.VideoCapture(camera_num)
         self.timer2.start()
         if not self.video2.isOpened():
-            print("No second camera opening.")
+            print("No second camera turned on.")
             return
-
 
     def stop_test(self):
         self.timer.stop()
+        self.timer2.stop()
         print("STOP!")
 
     # 連結按鈕
@@ -272,13 +269,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.button_picture.clicked.connect(self.open_picture)
         self.button_video.clicked.connect(self.open_video)
         self.button_camera.clicked.connect(self.open_camera)
-
         self.button_camera.clicked.connect(self.open_camera2)
         self.button_offset.clicked.connect(self.open_offset_slider)
         self.button_stop.clicked.connect(self.stop_test)
+
         self.timer.timeout.connect(self.test_video)
         self.timer2.timeout.connect(self.test_camera2)
-
 
     # 獲得input長寬比
     def get_input_ratio(self):
