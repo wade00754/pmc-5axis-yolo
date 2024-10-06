@@ -56,8 +56,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi(self)
-        self.pose_model = YOLO("yolov8n-pose.pt")
-        self.object_model = YOLO("best.pt")
+        self.pose_model = YOLO("yolo11n-pose.pt")
+        self.object_model = YOLO("pmc5axis11n.pt")
         self.offsets = {
             "stop_x": 52,
             "stop_y": 0,
