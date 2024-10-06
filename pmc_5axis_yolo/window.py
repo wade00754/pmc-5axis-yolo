@@ -62,7 +62,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             "stop_x": 52,
             "stop_y": 0,
             "feed_x": 45,
-            "feed_y": -20,
+            "feed_y": -10,
         }
 
         self.timer = QTimer()

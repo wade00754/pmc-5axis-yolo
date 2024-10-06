@@ -1,4 +1,5 @@
 import random
+from calendar import c
 from enum import Enum
 from typing import Any
 
@@ -147,7 +148,7 @@ def predict_single(
     # ------------------------------
     # 使用你自訓練的物件偵測模型進行偵測
     print("Predicting objects...")
-    object_results = object_model.predict(image)
+    object_results = object_model.predict(image, conf=0.3)
 
     # 獲取類別數量（假設類別編號從 0 開始連續編號）
     num_classes = len(object_model.names)
