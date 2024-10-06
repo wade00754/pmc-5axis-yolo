@@ -6,20 +6,22 @@ https://docs.google.com/document/d/1u8nVipfFU_nLdr4CubXVMvVeNkQICOIn86TfEJSq1K0/
 
 ## Folder structure
 ```
-Project-YOLOv8/
+pmc-5axis-yolo/
 ├── images/
 │   ├── sample_image1
 │   ├── sample_image2
 │   └── ...
-├── training/
-│   ├── predict.py
-│   └── train.py
-├── ui_design/
-│   ├── main.py
-│   ├── main_window_ui_.py
-│   └── main_window.ui
-└── best.pt
+├── pmc_5axis_yolo/
+│   ├── training/
+│   │   └── ...
+│   ├── ui/
+│   │   └── ...
+│   ├── utils/
+│   │   └── ...
+│   └── window.py
+├── app.py
+└── pmc5axis11n.pt
 ```
 
 # Dataset
-https://universe.roboflow.com/object-detecting-oiza8/-pk0aw
+[Roboflow Universe](https://universe.roboflow.com/pmc-5axis-yolo/pmc-detection)
