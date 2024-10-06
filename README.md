@@ -25,3 +25,6 @@ pmc-5axis-yolo/
 
 # Dataset
 [Roboflow Universe](https://universe.roboflow.com/pmc-5axis-yolo/pmc-detection)
+
+# Model
+[Ultralytics HUB](https://hub.ultralytics.com/models/JA18r8P9GAVauOzS4uFx)
