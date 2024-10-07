@@ -1,12 +1,12 @@
-import random
-from calendar import c
+from dataclasses import dataclass, fields
 from enum import Enum
-from typing import Any
 
 import cv2
 from cv2.typing import MatLike
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
+
+from ..utils import extract_object_regions, generate_colors
 
 
 class SafeState(Enum):
@@ -15,23 +15,17 @@ class SafeState(Enum):
     UNDETECTED = 2
 
 
-# 定義一個函數來生成隨機顏色
-def generate_colors(num_classes):
-    random.seed(42)  # 設定隨機種子以確保顏色一致
-    colors = {}
-    for i in range(num_classes):
-        colors[i] = (
-            random.randint(0, 255),
-            random.randint(0, 255),
-            random.randint(0, 255),
-        )
-    return colors
+@dataclass
+class Behavior:
+    is_hand_on_stop: SafeState = SafeState.UNDETECTED
+    is_hand_on_feed: SafeState = SafeState.UNDETECTED
+    is_knife_base_collided: SafeState = SafeState.UNDETECTED
 
 
 # 測試手部是否在按鈕上
 def predict_safe(
     pose_results: list[Results], object_results: list[Results], offsets: dict
-) -> tuple[SafeState, SafeState, SafeState]:
+) -> Behavior:
     # 獲取關鍵點 索引為: 9 是右手腕，10 是左手腕（根據 COCO 的姿態標註）
     keypoints = pose_results[0].keypoints.xy[0]
 
@@ -43,89 +37,58 @@ def predict_safe(
         left_hand = keypoints[9].tolist()  # (x, y) of left hand
         right_hand = keypoints[10].tolist()  # (x, y) of right hand
 
-    # 初始化 Stop 和 Feed 按鈕的範圍變數及手是否在按鈕上的變數
-    stop_region = None
-    feed_region = None
-    knife_region = None
-    base_region = None
-    is_hand_on_stop = SafeState.UNDETECTED
-    is_hand_on_feed = SafeState.UNDETECTED
-    is_knife_base_collided = SafeState.UNDETECTED
+    # 提取 stop、feed、knife 和 base 的範圍
+    regions = extract_object_regions(object_results, ["stop", "feed", "knife", "base"])
 
-    # 遍歷每一個偵測結果來找到 stop、feed、knife 和 base 的範圍
-    for object in object_results[0].boxes:
-        # 獲取偵測框的座標
-        x1, y1, x2, y2 = map(int, object.xyxy[0].tolist())
-
-        # 獲取物件的類別編號
-        class_id = int(object.cls[0])
-
-        # 獲取物件的類別名稱
-        class_name = object_results[0].names[class_id]
-
-        # 如果是 Stop 按鈕，記錄其範圍
-        if class_name == "stop":
-            stop_region = {"x_min": x1, "x_max": x2, "y_min": y1, "y_max": y2}
-
-        # 如果是 Feed 按鈕，記錄其範圍
-        if class_name == "feed":
-            feed_region = {"x_min": x1, "x_max": x2, "y_min": y1, "y_max": y2}
-
-        # 如果是 Knife，記錄其範圍
-        if class_name == "knife":
-            knife_region = {"x_min": x1, "x_max": x2, "y_min": y1, "y_max": y2}
-
-        # 如果是 Base，記錄其範圍
-        if class_name == "base":
-            base_region = {"x_min": x1, "x_max": x2, "y_min": y1, "y_max": y2}
+    # 初始化手是否在按鈕上的變數
+    behavior = Behavior()
 
     # 判斷左手是否在 Stop 按鈕上
-    if stop_region and person:
-        if sum(left_hand) == 0:  # 沒有偵測到左手
-            is_hand_on_stop = SafeState.UNDETECTED
-        else:
+    if regions["stop"] and person:
+        if sum(left_hand) != 0:  # 有偵測到左手
             left_hand_x = left_hand[0] + offsets.get("stop_x", 0)
             left_hand_y = left_hand[1] + offsets.get("stop_y", 0)
-            is_hand_on_stop = (
+            behavior.is_hand_on_stop = (
                 SafeState.YES
-                if stop_region["x_min"] <= left_hand_x <= stop_region["x_max"]
-                and stop_region["y_min"] <= left_hand_y <= stop_region["y_max"]
+                if regions["stop"].x_min <= left_hand_x <= regions["stop"].x_max
+                and regions["stop"].y_min <= left_hand_y <= regions["stop"].y_max
                 else SafeState.NO
             )
 
     # 判斷右手是否在 Feed 按鈕上
-    if feed_region and person:
-        if sum(right_hand) == 0:  # 沒有偵測到右手
-            is_hand_on_feed = SafeState.UNDETECTED
-        else:
+    if regions["feed"] and person:
+        if sum(right_hand) != 0:  # 有偵測到右手
             right_hand_x = right_hand[0] + offsets.get("feed_x", 0)
             right_hand_y = right_hand[1] + offsets.get("feed_y", 0)
-            is_hand_on_feed = (
+            behavior.is_hand_on_feed = (
                 SafeState.YES
-                if feed_region["x_min"] <= right_hand_x <= feed_region["x_max"]
-                and feed_region["y_min"] <= right_hand_y <= feed_region["y_max"]
+                if regions["feed"].x_min <= right_hand_x <= regions["feed"].x_max
+                and regions["feed"].y_min <= right_hand_y <= regions["feed"].y_max
                 else SafeState.NO
             )
 
     # 判斷 Knife 是否碰到 Base
-    if knife_region and base_region:
-        is_knife_base_collided = (
+    if regions["knife"] and regions["base"]:
+        behavior.is_knife_base_collided = (
             SafeState.YES
-            if knife_region["y_max"] >= base_region["y_min"]  # -5 # 5 pixels tolerance
+            if regions["knife"].y_max
+            >= regions["base"].y_min  # -5 # 5 pixels tolerance
             and (
-                base_region["x_min"] <= knife_region["x_min"] <= base_region["x_max"]
-                or base_region["x_min"] <= knife_region["x_max"] <= base_region["x_max"]
+                regions["base"].x_min <= regions["knife"].x_min <= regions["base"].x_max
+                or regions["base"].x_min
+                <= regions["knife"].x_max
+                <= regions["base"].x_max
             )
             else SafeState.NO
         )
 
-    return is_hand_on_stop, is_hand_on_feed, is_knife_base_collided
+    return behavior
 
 
 # 測試單張影像
 def predict_single(
     image: str | MatLike, pose_model: YOLO, object_model: YOLO, offsets: dict
-) -> tuple[MatLike, SafeState, SafeState, SafeState]:
+) -> tuple[MatLike, Behavior]:
     # # 讀取影像
     # image_path = cv2.imread(image_path)
 
@@ -161,15 +124,15 @@ def predict_single(
     combined_frame = pose_annotated_frame.copy()
 
     # 遍歷每一個偵測結果
-    for detection in object_results[0].boxes:
+    for object in object_results[0].boxes:
         # 獲取偵測框的座標
-        x1, y1, x2, y2 = map(int, detection.xyxy[0].tolist())
+        x1, y1, x2, y2 = map(int, object.xyxy[0].tolist())
 
         # 獲取物件的置信度
-        confidence = detection.conf[0]
+        confidence = object.conf[0]
 
         # 獲取物件的類別編號
-        class_id = int(detection.cls[0])
+        class_id = int(object.cls[0])
 
         # 獲取物件的類別名稱
         class_name = (
@@ -215,46 +178,36 @@ def predict_single(
             1,
         )
 
-    is_hand_on_stop, is_hand_on_feed, is_knife_base_collided = predict_safe(
-        pose_results, object_results, offsets
-    )
+    behavior = predict_safe(pose_results, object_results, offsets)
 
-    return combined_frame, is_hand_on_stop, is_hand_on_feed, is_knife_base_collided
+    return combined_frame, behavior
 
 
 def predict_multiple(
     images: list[str | MatLike], pose_model: YOLO, object_model: YOLO, offsets: dict
-) -> tuple[list[MatLike], SafeState, SafeState, SafeState]:
+) -> tuple[list[MatLike], Behavior]:
     combined_frames = []
-    is_hand_on_stop = SafeState.UNDETECTED
-    is_hand_on_feed = SafeState.UNDETECTED
-    is_knife_base_collided = SafeState.UNDETECTED
+    behaviors = Behavior()
 
     for image in images:
-        combined_frame, hand_on_stop, hand_on_feed, knife_base_collided = (
-            predict_single(image, pose_model, object_model, offsets)
+        combined_frame, behavior = predict_single(
+            image, pose_model, object_model, offsets
         )
         combined_frames.append(combined_frame)
 
-        if hand_on_stop != SafeState.UNDETECTED:
-            if is_hand_on_stop == SafeState.UNDETECTED:
-                is_hand_on_stop = hand_on_stop
-            else:
-                is_hand_on_stop = is_hand_on_stop and hand_on_stop
+        for field in fields(behavior):
+            behavior_value = getattr(behavior, field)
+            behaviors_value = getattr(behaviors, field)
+            if behavior_value != SafeState.UNDETECTED:
+                if behaviors_value == SafeState.UNDETECTED:
+                    setattr(behaviors, field, behavior_value)
+                else:
+                    if field == "is_knife_base_collided":
+                        setattr(behaviors, field, behaviors_value or behavior_value)
+                    else:
+                        setattr(behaviors, field, behaviors_value and behavior_value)
 
-        if hand_on_feed != SafeState.UNDETECTED:
-            if is_hand_on_feed == SafeState.UNDETECTED:
-                is_hand_on_feed = hand_on_feed
-            else:
-                is_hand_on_feed = is_hand_on_feed and hand_on_feed
-
-        if knife_base_collided != SafeState.UNDETECTED:
-            if is_knife_base_collided == SafeState.UNDETECTED:
-                is_knife_base_collided = knife_base_collided
-            else:
-                is_knife_base_collided = is_knife_base_collided or knife_base_collided
-
-    return combined_frames, is_hand_on_stop, is_hand_on_feed, is_knife_base_collided
+    return combined_frames, behaviors
 
 
 # # ------------------------------
