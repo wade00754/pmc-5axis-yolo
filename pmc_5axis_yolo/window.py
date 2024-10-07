@@ -12,22 +12,10 @@ from PySide6.QtWidgets import (
 )
 from ultralytics import YOLO
 
+from .tasks import OffsetSlider, adj_offsets, predict_multiple, predict_single
 from .ui.ask_offset_ui import Ui_Dialog
 from .ui.main_window_ui import Ui_MainWindow
-from .utils import (
-    OffsetSlider,
-    SafeState,
-    adj_offsets,
-    predict_multiple,
-    predict_single,
-)
-
-
-def convert2QImage(img):
-    height, width, channel = img.shape
-    bytes_per_line = width * channel
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    return QImage(img.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
+from .utils import convert2QImage
 
 
 class AskInitOffset(QDialog):
@@ -163,20 +151,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             MatLike | list[MatLike]: The processed image or a list of processed images.
         """
         if isinstance(file, list):
-            image, is_hand_on_stop, is_hand_on_feed, is_knife_base_collided = (
-                predict_multiple(file, self.pose_model, self.object_model, self.offsets)
+            image, behavior = predict_multiple(
+                file, self.pose_model, self.object_model, self.offsets
             )
         else:
-            image, is_hand_on_stop, is_hand_on_feed, is_knife_base_collided = (
-                predict_single(file, self.pose_model, self.object_model, self.offsets)
+            image, behavior = predict_single(
+                file, self.pose_model, self.object_model, self.offsets
             )
-        print(f"Is hand on stop button: {is_hand_on_stop.name}")
-        print(f"Is hand on feed button: {is_hand_on_feed.name}")
-        print(f"Does knife collide with base: {is_knife_base_collided.name}")
-        self.Label_HandStop_Status.setText(f"Hand on Stop: {is_hand_on_stop.name}")
-        self.Label_HandFeed_Status.setText(f"Hand on Feed: {is_hand_on_feed.name}")
+        print(f"Is hand on stop button: {behavior.is_hand_on_stop.name}")
+        print(f"Is hand on feed button: {behavior.is_hand_on_feed.name}")
+        print(f"Does knife collide with base: {behavior.is_knife_base_collided.name}")
+        self.Label_HandStop_Status.setText(
+            f"Hand on Stop: {behavior.is_hand_on_stop.name}"
+        )
+        self.Label_HandFeed_Status.setText(
+            f"Hand on Feed: {behavior.is_hand_on_feed.name}"
+        )
         self.Label_KnifeBaseCollid_status.setText(
-            f"Knife Base Collided: {is_knife_base_collided.name}"
+            f"Knife Base Collided: {behavior.is_knife_base_collided.name}"
         )
 
         return image

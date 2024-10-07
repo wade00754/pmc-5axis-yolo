@@ -1,7 +1,7 @@
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QFileDialog
 
-from .utils import *
+from .tasks import *
 
 
 class SetOffset:

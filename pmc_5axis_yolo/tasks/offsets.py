@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QDialog
 from ultralytics import YOLO
 
 from ..ui.offset_slider_ui import Ui_Dialog
+from ..utils import extract_object_regions
 
 
 class OffsetSlider(QDialog, Ui_Dialog):
@@ -109,8 +110,8 @@ def adj_offsets(
 
     if to_adj:
         print("Adjusting offsets...")
-        pose_results = pose_model.predict(image)
-        object_results = object_model.predict(image)
+        pose_results = pose_model.predict(image, conf=0.4)
+        object_results = object_model.predict(image, conf=0.3)
 
         # 獲取關鍵點 索引為: 9 是右手腕，10 是左手腕（根據 COCO 的姿態標註）
         keypoints = pose_results[0].keypoints.xy[0]
@@ -119,40 +120,20 @@ def adj_offsets(
         left_hand = keypoints[9].tolist()  # (x, y) of left hand
         right_hand = keypoints[10].tolist()  # (x, y) of right hand
 
-        # 初始化 Stop 和 Feed 按鈕的範圍變數
-        stop_region = None
-        feed_region = None
-
-        # 遍歷每一個偵測結果來找到 stop 和 feed 的範圍
-        for object in object_results[0].boxes:
-            # 獲取偵測框的座標
-            x1, y1, x2, y2 = map(int, object.xyxy[0].tolist())
-
-            # 獲取物件的類別編號
-            class_id = int(object.cls[0])
-
-            # 獲取物件的類別名稱
-            class_name = object_results[0].names[class_id]
-
-            # 如果是 Stop 按鈕，記錄其範圍
-            if class_name == "stop":
-                stop_region = {"x_min": x1, "x_max": x2, "y_min": y1, "y_max": y2}
-
-            # 如果是 Feed 按鈕，記錄其範圍
-            if class_name == "feed":
-                feed_region = {"x_min": x1, "x_max": x2, "y_min": y1, "y_max": y2}
+        # 提取 stop 和 feed 按鈕的範圍
+        regions = extract_object_regions(object_results, ["stop", "feed"])
 
         # 判斷左手和 Stop 按鈕的相對位置
-        if stop_region:
-            x = (stop_region["x_min"] + stop_region["x_max"]) / 2
-            y = (stop_region["y_min"] + stop_region["y_max"]) / 2
+        if regions["stop"]:
+            x = (regions["stop"].x_min + regions["stop"].x_max) / 2
+            y = (regions["stop"].y_min + regions["stop"].y_max) / 2
             offsets["stop_x"] = x - left_hand[0]
             offsets["stop_y"] = y - left_hand[1]
 
         # 判斷右手和 Feed 按鈕的相對位置
-        if feed_region:
-            x = (feed_region["x_min"] + feed_region["x_max"]) / 2
-            y = (feed_region["y_min"] + feed_region["y_max"]) / 2
+        if regions["feed"]:
+            x = (regions["feed"].x_min + regions["feed"].x_max) / 2
+            y = (regions["feed"].y_min + regions["feed"].y_max) / 2
             offsets["feed_x"] = x - right_hand[0]
             offsets["feed_y"] = y - right_hand[1]
 
