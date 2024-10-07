@@ -1,5 +1,7 @@
+from cv2.typing import MatLike
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QDialog
+from ultralytics import YOLO
 
 from ..ui.offset_slider_ui import Ui_Dialog
 
@@ -97,21 +99,25 @@ class OffsetSlider(QDialog, Ui_Dialog):
 
 
 def adj_offsets(
-    to_adj, offsets, image, pose_model, object_model
-):  # similar to test_hand_on_button
+    to_adj: bool,
+    offsets: dict,
+    image: str | MatLike,
+    pose_model: YOLO,
+    object_model: YOLO,
+) -> dict:  # similar to test_hand_on_button
     old_offsets = offsets.copy()  # save old offsets
 
     if to_adj:
         print("Adjusting offsets...")
-        pose_results = pose_model(image)
-        object_results = object_model(image)
+        pose_results = pose_model.predict(image)
+        object_results = object_model.predict(image)
 
         # 獲取關鍵點 索引為: 9 是右手腕，10 是左手腕（根據 COCO 的姿態標註）
         keypoints = pose_results[0].keypoints.xy[0]
 
         # 取得右手與左手的座標 (x, y)
-        left_hand = keypoints[9]  # (x, y) of left hand
-        right_hand = keypoints[10]  # (x, y) of right hand
+        left_hand = keypoints[9].tolist()  # (x, y) of left hand
+        right_hand = keypoints[10].tolist()  # (x, y) of right hand
 
         # 初始化 Stop 和 Feed 按鈕的範圍變數
         stop_region = None
@@ -140,15 +146,15 @@ def adj_offsets(
         if stop_region:
             x = (stop_region["x_min"] + stop_region["x_max"]) / 2
             y = (stop_region["y_min"] + stop_region["y_max"]) / 2
-            offsets["stop_x"] = x - left_hand.cpu().numpy()[0]
-            offsets["stop_y"] = y - left_hand.cpu().numpy()[1]
+            offsets["stop_x"] = x - left_hand[0]
+            offsets["stop_y"] = y - left_hand[1]
 
         # 判斷右手和 Feed 按鈕的相對位置
         if feed_region:
             x = (feed_region["x_min"] + feed_region["x_max"]) / 2
             y = (feed_region["y_min"] + feed_region["y_max"]) / 2
-            offsets["feed_x"] = x - right_hand.cpu().numpy()[0]
-            offsets["feed_y"] = y - right_hand.cpu().numpy()[1]
+            offsets["feed_x"] = x - right_hand[0]
+            offsets["feed_y"] = y - right_hand[1]
 
     if offsets == {
         "stop_x": 52,

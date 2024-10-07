@@ -40,8 +40,8 @@ def predict_safe(
         person = False
     else:
         person = True
-        left_hand = keypoints[9]  # (x, y) of left hand
-        right_hand = keypoints[10]  # (x, y) of right hand
+        left_hand = keypoints[9].tolist()  # (x, y) of left hand
+        right_hand = keypoints[10].tolist()  # (x, y) of right hand
 
     # 初始化 Stop 和 Feed 按鈕的範圍變數及手是否在按鈕上的變數
     stop_region = None
@@ -81,11 +81,11 @@ def predict_safe(
 
     # 判斷左手是否在 Stop 按鈕上
     if stop_region and person:
-        if sum(left_hand.cpu().numpy()) == 0:  # 沒有偵測到左手
+        if sum(left_hand) == 0:  # 沒有偵測到左手
             is_hand_on_stop = SafeState.UNDETECTED
         else:
-            left_hand_x = left_hand.cpu().numpy()[0] + offsets.get("stop_x", 0)
-            left_hand_y = left_hand.cpu().numpy()[1] + offsets.get("stop_y", 0)
+            left_hand_x = left_hand[0] + offsets.get("stop_x", 0)
+            left_hand_y = left_hand[1] + offsets.get("stop_y", 0)
             is_hand_on_stop = (
                 SafeState.YES
                 if stop_region["x_min"] <= left_hand_x <= stop_region["x_max"]
@@ -95,11 +95,11 @@ def predict_safe(
 
     # 判斷右手是否在 Feed 按鈕上
     if feed_region and person:
-        if sum(right_hand.cpu().numpy()) == 0:  # 沒有偵測到右手
+        if sum(right_hand) == 0:  # 沒有偵測到右手
             is_hand_on_feed = SafeState.UNDETECTED
         else:
-            right_hand_x = right_hand.cpu().numpy()[0] + offsets.get("feed_x", 0)
-            right_hand_y = right_hand.cpu().numpy()[1] + offsets.get("feed_y", 0)
+            right_hand_x = right_hand[0] + offsets.get("feed_x", 0)
+            right_hand_y = right_hand[1] + offsets.get("feed_y", 0)
             is_hand_on_feed = (
                 SafeState.YES
                 if feed_region["x_min"] <= right_hand_x <= feed_region["x_max"]
