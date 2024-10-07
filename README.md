@@ -8,17 +8,13 @@ https://docs.google.com/document/d/1u8nVipfFU_nLdr4CubXVMvVeNkQICOIn86TfEJSq1K0/
 ```
 pmc-5axis-yolo/
 ├── images/
-│   ├── sample_image1
-│   ├── sample_image2
+│   ├── sample_images
+│   ├── sample_videos
 │   └── ...
 ├── pmc_5axis_yolo/
-│   ├── training/
-│   │   └── ...
-│   ├── ui/
-│   │   └── ...
-│   ├── utils/
-│   │   └── ...
-│   └── window.py
+│   └── ...
+├── tests/
+│   └── ...
 ├── app.py
 └── pmc5axis11n.pt
 ```
