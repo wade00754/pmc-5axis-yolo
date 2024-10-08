@@ -6,7 +6,7 @@ from cv2.typing import MatLike
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
 
-from ..const import OBJECT_MODEL, POSE_MODEL
+from ..settings import OBJECT_MODEL, POSE_MODEL
 from ..utils import extract_object_regions, generate_colors
 
 

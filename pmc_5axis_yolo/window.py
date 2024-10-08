@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
 )
 from ultralytics import YOLO
 
-from .const import DEFAULT_OFFSETS, OBJECT_MODEL, POSE_MODEL
+from .settings import DEFAULT_OFFSETS, OBJECT_MODEL, POSE_MODEL
 from .tasks import OffsetSlider, adj_offsets, predict_multiple, predict_single
 from .ui.ask_offset_ui import Ui_Dialog
 from .ui.main_window_ui import Ui_MainWindow

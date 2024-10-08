@@ -3,7 +3,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QDialog
 from ultralytics import YOLO
 
-from ..const import DEFAULT_OFFSETS, OBJECT_MODEL, POSE_MODEL
+from ..settings import DEFAULT_OFFSETS, OBJECT_MODEL, POSE_MODEL
 from ..ui.offset_slider_ui import Ui_Dialog
 from ..utils import extract_object_regions
 
