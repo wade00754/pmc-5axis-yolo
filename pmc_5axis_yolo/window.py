@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
 )
 from ultralytics import YOLO
 
+from .const import DEFAULT_OFFSETS, OBJECT_MODEL, POSE_MODEL
 from .tasks import OffsetSlider, adj_offsets, predict_multiple, predict_single
 from .ui.ask_offset_ui import Ui_Dialog
 from .ui.main_window_ui import Ui_MainWindow
@@ -44,15 +45,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi(self)
-        self.pose_model = YOLO("yolo11n-pose.pt")
-        self.object_model = YOLO("pmc5axis11n.pt")
-        self.offsets = {
-            "stop_x": 52,
-            "stop_y": 0,
-            "feed_x": 45,
-            "feed_y": -10,
-        }
-
+        self.pose_model = YOLO(OBJECT_MODEL)
+        self.object_model = YOLO(POSE_MODEL)
+        self.offsets = DEFAULT_OFFSETS.copy()
         self.timer = QTimer()
         self.timer2 = QTimer()
         self.timer.setInterval(1000)
@@ -134,9 +129,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 to_adj = False
                 print("No picture selected.")
-        self.offsets = adj_offsets(
-            to_adj, self.offsets, file_path, self.pose_model, self.object_model
-        )
+        self.offsets = adj_offsets(to_adj, self.offsets, file_path)
 
     def test(
         self, file: str | MatLike | list[str | MatLike]
@@ -151,13 +144,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             MatLike | list[MatLike]: The processed image or a list of processed images.
         """
         if isinstance(file, list):
-            image, behavior = predict_multiple(
-                file, self.pose_model, self.object_model, self.offsets
-            )
+            image, behavior = predict_multiple(file, self.offsets)
         else:
-            image, behavior = predict_single(
-                file, self.pose_model, self.object_model, self.offsets
-            )
+            image, behavior = predict_single(file, self.offsets)
         print(f"Is hand on stop button: {behavior.is_hand_on_stop.name}")
         print(f"Is hand on feed button: {behavior.is_hand_on_feed.name}")
         print(f"Does knife collide with base: {behavior.is_knife_base_collided.name}")

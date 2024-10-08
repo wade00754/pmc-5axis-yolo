@@ -6,6 +6,7 @@ from cv2.typing import MatLike
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
 
+from ..const import OBJECT_MODEL, POSE_MODEL
 from ..utils import extract_object_regions, generate_colors
 
 
@@ -86,9 +87,7 @@ def predict_safe(
 
 
 # 測試單張影像
-def predict_single(
-    image: str | MatLike, pose_model: YOLO, object_model: YOLO, offsets: dict
-) -> tuple[MatLike, Behavior]:
+def predict_single(image: str | MatLike, offsets: dict) -> tuple[MatLike, Behavior]:
     # # 讀取影像
     # image_path = cv2.imread(image_path)
 
@@ -101,7 +100,7 @@ def predict_single(
     # ------------------------------
     # 使用 YOLOv8n-pose 進行姿態估計
     print("Predicting pose...")
-    pose_results = pose_model.predict(image, conf=0.4)
+    pose_results = YOLO(POSE_MODEL).predict(image, conf=0.4)
 
     # 繪製姿態估計結果
     pose_annotated_frame = pose_results[0].plot()
@@ -111,6 +110,7 @@ def predict_single(
     # ------------------------------
     # 使用你自訓練的物件偵測模型進行偵測
     print("Predicting objects...")
+    object_model = YOLO(OBJECT_MODEL)
     object_results = object_model.predict(image, conf=0.3)
 
     # 獲取類別數量（假設類別編號從 0 開始連續編號）
@@ -184,15 +184,13 @@ def predict_single(
 
 
 def predict_multiple(
-    images: list[str | MatLike], pose_model: YOLO, object_model: YOLO, offsets: dict
+    images: list[str | MatLike], offsets: dict
 ) -> tuple[list[MatLike], Behavior]:
     combined_frames = []
     behaviors = Behavior()
 
     for image in images:
-        combined_frame, behavior = predict_single(
-            image, pose_model, object_model, offsets
-        )
+        combined_frame, behavior = predict_single(image, offsets)
         combined_frames.append(combined_frame)
 
         for field in fields(behavior):
