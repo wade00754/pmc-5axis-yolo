@@ -65,13 +65,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.Label_HandFeed_Status.setText("Hand on Feed: N/A")
         self.Label_KnifeBaseCollid_status.setText("Knife Base Collided: N/A")
 
-        self.output_media2.setVisible(False)
-        self.output_media3.setVisible(False)
-        self.output_media4.setVisible(False)
+        self.labels = [
+            self.input_media,
+            self.output_media,
+            self.output_media2,
+            self.output_media3,
+            self.output_media4,
+        ]
+
+        self.camera_change_button = [
+            self.camera_change1,
+            self.camera_change2,
+            self.camera_change3,
+            self.camera_change4,
+        ]
+
+        self.change_mode()
 
     def ask_for_offsets(self):
         dialog = AskInitOffset(self.set_offsets)
         dialog.exec()
+
+    def change_mode(self):
+        self.output_media2.setVisible(self.camera_on)
+        self.output_media3.setVisible(self.camera_on)
+        self.output_media4.setVisible(self.camera_on)
+        for button in self.camera_change_button:
+            button.setVisible(self.camera_on)
+        self.update_label_size()
 
     # ~~~~~~~~~~~~~~~~~~~~~~offset_slider~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def open_offset_slider(self):
@@ -170,8 +191,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # 圖片開啟
     def open_picture(self):
-        self.four_output_close()
         self.camera_on = 0
+        self.change_mode()
 
         self.timer.stop()
         self.timer2.stop()
@@ -202,7 +223,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # 影片
     def open_video(self):
         self.camera_on = 0
-        self.four_output_close()
+        self.change_mode()
 
         self.timer.stop()
         self.timer2.stop()
@@ -245,7 +266,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # 相機
     def open_camera(self):
         self.camera_on = 1
-        self.four_output_open()
+        self.change_mode()
 
         self.timer.stop()
         print("Turning on the camera...")
@@ -291,6 +312,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.button_offset.clicked.connect(self.open_offset_slider)
         self.button_stop.clicked.connect(self.stop_test)
 
+        self.camera_change1.clicked.connect(self.change_camera_1)
+        # self.camera_change2.clicked.connect(self.change_camera_2)
+        # self.camera_change3.clicked.connect(self.change_camera_3)
+        # self.camera_change4.clicked.connect(self.change_camera_4)
+
         self.timer.timeout.connect(self.test_video)
         self.timer2.timeout.connect(self.test_camera2)
 
@@ -306,31 +332,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super().resizeEvent(event)
         self.update_label_size()
 
-    # 切換右邊是四個還是一個輸出
-    def four_output_open(self):
-        self.output_media2.setVisible(True)
-        self.output_media3.setVisible(True)
-        self.output_media4.setVisible(True)
-        self.update_label_size()
-
-    def four_output_close(self):
-        self.output_media2.setVisible(False)
-        self.output_media3.setVisible(False)
-        self.output_media4.setVisible(False)
-        self.update_label_size()
-
     def update_label_size(self):
         height = self.size().height()
         new_width = height * self.aspect_ratio * 0.6
         new_height = height * 0.6
-
-        labels = [
-            self.input_media,
-            self.output_media,
-            self.output_media2,
-            self.output_media3,
-            self.output_media4,
-        ]
 
         if self.camera_on == 0:
             self.input_media.setFixedSize(int(new_width), int(new_height))
@@ -340,21 +345,39 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             output_height = int(new_height / 2)
 
             # 为 output_media 和其他 QLabel 设置尺寸
-            for label in labels:
+            for label in self.labels:
                 label.setFixedSize(output_width, output_height)
 
             # 检查各个标签是否在 gridLayout_2 中，并根据情况更新大小
-            for label in labels:
+            for label in self.labels:
                 if self.gridLayout_2.indexOf(label) != -1:
                     label.setFixedSize(int(new_width), int(new_height))
 
     def change_mark_output(self):
-        self.timer.stop()
-        self.timer2.stop()
         self.gridLayout_2.removeWidget(self.input_media)
-        self.gridLayout.removeWidget(self.output_media)
-
         self.gridLayout.addWidget(self.input_media, 0, 0, 1, 1)
+        self.gridLayout.removeWidget(self.output_media)
         self.gridLayout_2.addWidget(self.output_media, 2, 1, 1, 1)
-
         self.update_label_size()
+
+    def change_camera_1(self):
+        targetL = None
+        targetR = None
+
+        for Left in self.labels:
+            if self.gridLayout_2.indexOf(Left) != -1:
+                targetL = Left
+
+        #  gridLayout 的 (0, 0, 1, 1) 位置上
+        if self.gridLayout.itemAtPosition(0, 0) is not None:
+            widget_at_0_0 = self.gridLayout.itemAtPosition(0, 0).widget()
+            if widget_at_0_0 in self.labels:
+                targetR = widget_at_0_0
+
+        if targetL is not None and targetR is not None:
+            self.gridLayout_2.removeWidget(targetL)
+            self.gridLayout_2.addWidget(targetR, 2, 1, 1, 1)
+            self.gridLayout.removeWidget(targetR)
+
+            self.gridLayout.addWidget(targetL, 0, 0, 1, 1)
+            self.update_label_size()
