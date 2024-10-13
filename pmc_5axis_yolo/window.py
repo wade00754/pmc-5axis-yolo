@@ -63,6 +63,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.Label_HandFeed_Status.setText("Hand on Feed: N/A")
         self.Label_KnifeBaseCollid_status.setText("Knife Base Collided: N/A")
 
+        self.output_media2.setVisible(False)
+        self.output_media3.setVisible(False)
+        self.output_media4.setVisible(False)
+
     def ask_for_offsets(self):
         dialog = AskInitOffset(self.set_offsets)
         dialog.exec()
@@ -164,6 +168,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # 圖片開啟
     def open_picture(self):
+        self.four_output_close()
         self.camera_on = 0
 
         self.timer.stop()
@@ -195,6 +200,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # 影片
     def open_video(self):
         self.camera_on = 0
+        self.four_output_close()
 
         self.timer.stop()
         self.timer2.stop()
@@ -237,6 +243,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # 相機
     def open_camera(self):
         self.camera_on = 1
+        self.four_output_open()
 
         self.timer.stop()
         print("Turning on the camera...")
@@ -291,10 +298,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super().resizeEvent(event)
         self.update_label_size()
 
-    # 左右圖的新大小
+    def four_output_open(self):
+        self.output_media2.setVisible(True)
+        self.output_media3.setVisible(True)
+        self.output_media4.setVisible(True)
+        self.update_label_size()
+
+    def four_output_close(self):
+        self.output_media2.setVisible(False)
+        self.output_media3.setVisible(False)
+        self.output_media4.setVisible(False)
+        self.update_label_size()
+
     def update_label_size(self):
         height = self.size().height()
         new_width = height * self.aspect_ratio * 0.6
         new_height = height * 0.6
+
         self.input_media.setFixedSize(int(new_width), int(new_height))
-        self.output_media.setFixedSize(int(new_width), int(new_height))
+
+        output_width = int(new_width / 2)
+        output_height = int(new_height / 2)
+
+        if self.output_media2.isVisible():
+            self.output_media.setFixedSize(output_width, output_height)
+            self.output_media2.setFixedSize(output_width, output_height)
+            self.output_media3.setFixedSize(output_width, output_height)
+            self.output_media4.setFixedSize(output_width, output_height)
+        else:
+            self.output_media.setFixedSize(int(new_width), int(new_height))
