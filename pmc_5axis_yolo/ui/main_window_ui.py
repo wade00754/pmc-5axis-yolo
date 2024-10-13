@@ -23,7 +23,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(690, 477)
+        MainWindow.resize(938, 529)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.gridLayout_2 = QGridLayout(self.centralwidget)
@@ -100,7 +100,7 @@ class Ui_MainWindow(object):
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.input_media.sizePolicy().hasHeightForWidth())
         self.input_media.setSizePolicy(sizePolicy1)
-        self.input_media.setMinimumSize(QSize(300, 250))
+        self.input_media.setMinimumSize(QSize(150, 125))
         self.input_media.setScaledContents(True)
         self.input_media.setAlignment(Qt.AlignmentFlag.AlignCenter)
 

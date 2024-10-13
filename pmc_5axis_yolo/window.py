@@ -9,6 +9,8 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QMainWindow,
     QWidget,
+    QLabel,
+    QVBoxLayout,
 )
 from ultralytics import YOLO
 
@@ -274,12 +276,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer2.stop()
         print("STOP!")
 
+    def camera_button_function(self):
+        if self.camera_on == 1:
+            self.change_mark_output()
+        else:
+            self.open_camera()
+            # self.open_camera2()
+
     # 連結按鈕
     def bind_slots(self):
         self.button_picture.clicked.connect(self.open_picture)
         self.button_video.clicked.connect(self.open_video)
-        self.button_camera.clicked.connect(self.open_camera)
-        self.button_camera.clicked.connect(self.open_camera2)
+        self.button_camera.clicked.connect(self.camera_button_function)
         self.button_offset.clicked.connect(self.open_offset_slider)
         self.button_stop.clicked.connect(self.stop_test)
 
@@ -298,6 +306,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super().resizeEvent(event)
         self.update_label_size()
 
+    # 切換右邊是四個還是一個輸出
     def four_output_open(self):
         self.output_media2.setVisible(True)
         self.output_media3.setVisible(True)
@@ -315,15 +324,37 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         new_width = height * self.aspect_ratio * 0.6
         new_height = height * 0.6
 
-        self.input_media.setFixedSize(int(new_width), int(new_height))
+        labels = [
+            self.input_media,
+            self.output_media,
+            self.output_media2,
+            self.output_media3,
+            self.output_media4,
+        ]
 
-        output_width = int(new_width / 2)
-        output_height = int(new_height / 2)
-
-        if self.output_media2.isVisible():
-            self.output_media.setFixedSize(output_width, output_height)
-            self.output_media2.setFixedSize(output_width, output_height)
-            self.output_media3.setFixedSize(output_width, output_height)
-            self.output_media4.setFixedSize(output_width, output_height)
-        else:
+        if self.camera_on == 0:
+            self.input_media.setFixedSize(int(new_width), int(new_height))
             self.output_media.setFixedSize(int(new_width), int(new_height))
+        elif self.camera_on == 1:
+            output_width = int(new_width / 2)
+            output_height = int(new_height / 2)
+
+            # 为 output_media 和其他 QLabel 设置尺寸
+            for label in labels:
+                label.setFixedSize(output_width, output_height)
+
+            # 检查各个标签是否在 gridLayout_2 中，并根据情况更新大小
+            for label in labels:
+                if self.gridLayout_2.indexOf(label) != -1:
+                    label.setFixedSize(int(new_width), int(new_height))
+
+    def change_mark_output(self):
+        self.timer.stop()
+        self.timer2.stop()
+        self.gridLayout_2.removeWidget(self.input_media)
+        self.gridLayout.removeWidget(self.output_media)
+
+        self.gridLayout.addWidget(self.input_media, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.output_media, 2, 1, 1, 1)
+
+        self.update_label_size()
