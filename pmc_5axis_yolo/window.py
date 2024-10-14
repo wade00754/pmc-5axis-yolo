@@ -50,9 +50,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pose_model = YOLO(OBJECT_MODEL)
         self.object_model = YOLO(POSE_MODEL)
         self.offsets = DEFAULT_OFFSETS.copy()
+
         self.timer = QTimer()
+        self.timer1 = QTimer()
         self.timer2 = QTimer()
-        self.timer.setInterval(1000)
+        self.timer3 = QTimer()
+        self.timer4 = QTimer()
+        self.timers = [self.timer, self.timer1, self.timer2, self.timer3, self.timer4]
+        for timer in self.timers:
+            timer.setInterval(1000)
         self.video = None
         self.video2 = None
         self.camera_on = 0
@@ -93,6 +99,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for button in self.camera_change_button:
             button.setVisible(self.camera_on)
         self.update_label_size()
+        if self.camera_on == 0:
+            for timer in self.timers:
+                timer.stop()
 
     # ~~~~~~~~~~~~~~~~~~~~~~offset_slider~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def open_offset_slider(self):
@@ -140,8 +149,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # 設定手腕調整值
     def set_offsets(self):
-        self.timer.stop()
-        self.timer2.stop()
+        for timer in self.timers:
+            timer.stop()
         # TODO: objects範圍寬限值
         to_adj = True
         file_path = None
@@ -194,9 +203,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.camera_on = 0
         self.change_mode()
 
-        self.timer.stop()
-        self.timer2.stop()
-
         print("Selecting a picture...")
         file_path = QFileDialog.getOpenFileName(
             self, dir="images", filter="*.jpg;*.png;*.jpeg"
@@ -225,9 +231,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.camera_on = 0
         self.change_mode()
 
-        self.timer.stop()
-        self.timer2.stop()
-
         print("Selecting a video...")
         file_path = QFileDialog.getOpenFileName(self, dir="images", filter="*.mp4")
         if file_path[0]:
@@ -246,11 +249,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not ret:
             self.timer.stop()
         else:
-
+            image = self.test(frame)
             if self.camera_on == 0:
+                print("Testing video...")
                 self.input_media.setPixmap(QPixmap.fromImage(convert2QImage(frame)))
+                self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
+            elif self.camera_on == 1:
+                print("Testing main camera...")
+                self.input_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
-            print("Testing video...")
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~camera test~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def test_camera1(self):
+        ret, frame = self.video1.read()
+        if not ret:
+            self.timer1.stop()
+        else:
+            print("Testing subvideo1...")
             image = self.test(frame)
             self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
@@ -259,17 +273,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not ret:
             self.timer2.stop()
         else:
-            print("Testing video2...")
+            print("Testing subvideo2...")
             image = self.test(frame)
-            self.input_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
+            self.output_media2.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
-    # 相機
+    def test_camera3(self):
+        ret, frame = self.video3.read()
+        if not ret:
+            self.timer3.stop()
+        else:
+            print("Testing subvideo3...")
+            image = self.test(frame)
+            self.output_media3.setPixmap(QPixmap.fromImage(convert2QImage(image)))
+
+    def test_camera4(self):
+        ret, frame = self.video4.read()
+        if not ret:
+            self.timer4.stop()
+        else:
+            print("Testing subvideo4...")
+            image = self.test(frame)
+            self.output_media4.setPixmap(QPixmap.fromImage(convert2QImage(image)))
+
     def open_camera(self):
         self.camera_on = 1
         self.change_mode()
 
         self.timer.stop()
-        print("Turning on the camera...")
+        print("Turning on the main camera...")
         camera_num = 0
         self.video = cv2.VideoCapture(camera_num)
         if not self.video.isOpened():
@@ -282,33 +313,63 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.get_input_ratio()
         self.timer.start()
 
+    def open_camera1(self):
+        self.timer1.stop()
+        print("Turning on sub1 camera...")
+        camera_num = 1  # 第二个摄像头
+        self.video1 = cv2.VideoCapture(camera_num)
+        self.timer1.start()
+        if not self.video1.isOpened():
+            print("No sub1 camera turned on.")
+            return
+
     def open_camera2(self):
         self.timer2.stop()
-        print("Turning on second camera...")
-        camera_num = 1  # 第二个摄像头
+        print("Turning on sub2 camera...")
+        camera_num = 2  # 第二个摄像头
         self.video2 = cv2.VideoCapture(camera_num)
         self.timer2.start()
         if not self.video2.isOpened():
-            print("No second camera turned on.")
+            print("No sub2 camera turned on.")
+            return
+
+    def open_camera3(self):
+        self.timer3.stop()
+        print("Turning on sub3 camera...")
+        camera_num = 3  # 第二个摄像头
+        self.video3 = cv2.VideoCapture(camera_num)
+        self.timer3.start()
+        if not self.video3.isOpened():
+            print("No sub3 camera turned on.")
+            return
+
+    def open_camera4(self):
+        self.timer4.stop()
+        print("Turning on sub4 camera...")
+        camera_num = 4  # 第二个摄像头
+        self.video4 = cv2.VideoCapture(camera_num)
+        self.timer4.start()
+        if not self.video4.isOpened():
+            print("No sub4 camera turned on.")
             return
 
     def stop_test(self):
-        self.timer.stop()
-        self.timer2.stop()
+        for timer in self.timers:
+            timer.stop()
         print("STOP!")
 
-    def camera_button_function(self):
-        if self.camera_on == 1:
-            self.change_mark_output()
-        else:
-            self.open_camera()
-            # self.open_camera2()
+    def open_camera_function(self):
+        self.open_camera()
+        self.open_camera1()
+        self.open_camera2()
+        self.open_camera3()
+        self.open_camera4()
 
     # 連結按鈕
     def bind_slots(self):
         self.button_picture.clicked.connect(self.open_picture)
         self.button_video.clicked.connect(self.open_video)
-        self.button_camera.clicked.connect(self.camera_button_function)
+        self.button_camera.clicked.connect(self.open_camera_function)
         self.button_offset.clicked.connect(self.open_offset_slider)
         self.button_stop.clicked.connect(self.stop_test)
 
@@ -318,7 +379,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.camera_change4.clicked.connect(self.change_camera_4)
 
         self.timer.timeout.connect(self.test_video)
+        self.timer1.timeout.connect(self.test_camera1)
         self.timer2.timeout.connect(self.test_camera2)
+        self.timer3.timeout.connect(self.test_camera3)
+        self.timer4.timeout.connect(self.test_camera4)
 
     # 獲得input長寬比
     def get_input_ratio(self):
