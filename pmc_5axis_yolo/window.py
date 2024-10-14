@@ -313,9 +313,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.button_stop.clicked.connect(self.stop_test)
 
         self.camera_change1.clicked.connect(self.change_camera_1)
-        # self.camera_change2.clicked.connect(self.change_camera_2)
-        # self.camera_change3.clicked.connect(self.change_camera_3)
-        # self.camera_change4.clicked.connect(self.change_camera_4)
+        self.camera_change2.clicked.connect(self.change_camera_2)
+        self.camera_change3.clicked.connect(self.change_camera_3)
+        self.camera_change4.clicked.connect(self.change_camera_4)
 
         self.timer.timeout.connect(self.test_video)
         self.timer2.timeout.connect(self.test_camera2)
@@ -380,4 +380,70 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.gridLayout.removeWidget(targetR)
 
             self.gridLayout.addWidget(targetL, 0, 0, 1, 1)
+            self.update_label_size()
+
+    def change_camera_2(self):
+        targetL = None
+        targetR = None
+
+        for Left in self.labels:
+            if self.gridLayout_2.indexOf(Left) != -1:
+                targetL = Left
+
+        #  gridLayout 的 (0, 0, 1, 1) 位置上
+        if self.gridLayout.itemAtPosition(0, 0) is not None:
+            widget_at_0_0 = self.gridLayout.itemAtPosition(0, 1).widget()
+            if widget_at_0_0 in self.labels:
+                targetR = widget_at_0_0
+
+        if targetL is not None and targetR is not None:
+            self.gridLayout_2.removeWidget(targetL)
+            self.gridLayout_2.addWidget(targetR, 2, 1, 1, 1)
+            self.gridLayout.removeWidget(targetR)
+
+            self.gridLayout.addWidget(targetL, 0, 1, 1, 1)
+            self.update_label_size()
+
+    def change_camera_3(self):
+        targetL = None
+        targetR = None
+
+        for Left in self.labels:
+            if self.gridLayout_2.indexOf(Left) != -1:
+                targetL = Left
+
+        #  gridLayout 的 (0, 0, 1, 1) 位置上
+        if self.gridLayout.itemAtPosition(0, 0) is not None:
+            widget_at_0_0 = self.gridLayout.itemAtPosition(1, 0).widget()
+            if widget_at_0_0 in self.labels:
+                targetR = widget_at_0_0
+
+        if targetL is not None and targetR is not None:
+            self.gridLayout_2.removeWidget(targetL)
+            self.gridLayout_2.addWidget(targetR, 2, 1, 1, 1)
+            self.gridLayout.removeWidget(targetR)
+
+            self.gridLayout.addWidget(targetL, 1, 0, 1, 1)
+            self.update_label_size()
+
+    def change_camera_4(self):
+        targetL = None
+        targetR = None
+
+        for Left in self.labels:
+            if self.gridLayout_2.indexOf(Left) != -1:
+                targetL = Left
+
+        #  gridLayout 的 (0, 0, 1, 1) 位置上
+        if self.gridLayout.itemAtPosition(0, 0) is not None:
+            widget_at_0_0 = self.gridLayout.itemAtPosition(1, 1).widget()
+            if widget_at_0_0 in self.labels:
+                targetR = widget_at_0_0
+
+        if targetL is not None and targetR is not None:
+            self.gridLayout_2.removeWidget(targetL)
+            self.gridLayout_2.addWidget(targetR, 2, 1, 1, 1)
+            self.gridLayout.removeWidget(targetR)
+
+            self.gridLayout.addWidget(targetL, 1, 1, 1, 1)
             self.update_label_size()
