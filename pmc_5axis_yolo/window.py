@@ -19,6 +19,7 @@ from .tasks import OffsetSlider, adj_offsets, predict_multiple, predict_single
 from .ui.ask_offset_ui import Ui_Dialog
 from .ui.main_window_ui import Ui_MainWindow
 from .utils import convert2QImage
+from playsound import playsound
 
 
 class AskInitOffset(QDialog):
@@ -195,6 +196,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.Label_KnifeBaseCollid_status.setText(
             f"Knife Base Collided: {behavior.is_knife_base_collided.name}"
         )
+        if behavior.is_hand_on_stop.name == "NO":
+            print("Hand not on stop button! Playing sound alert.")
+            playsound("warning.mp3")
+        if behavior.is_hand_on_feed.name == "NO":
+            print("Hand not on stop button! Playing sound alert.")
+            playsound("warning.mp3")
 
         return image
 
