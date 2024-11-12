@@ -196,8 +196,8 @@ def predict_multiple(
         combined_frames.append(combined_frame)
 
         for field in fields(behavior):
-            behavior_value = getattr(behavior, field)
-            behaviors_value = getattr(behaviors, field)
+            behavior_value = getattr(behavior, field.name)
+            behaviors_value = getattr(behaviors, field.name)
             if behavior_value != SafeState.UNDETECTED:
                 if behaviors_value == SafeState.UNDETECTED:
                     setattr(behaviors, field, behavior_value)
