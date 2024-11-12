@@ -1,5 +1,6 @@
 import cv2
 from cv2.typing import MatLike
+from playsound import playsound
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import (
@@ -7,10 +8,10 @@ from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFileDialog,
-    QMainWindow,
-    QWidget,
     QLabel,
+    QMainWindow,
     QVBoxLayout,
+    QWidget,
 )
 from ultralytics import YOLO
 
@@ -19,7 +20,6 @@ from .tasks import OffsetSlider, adj_offsets, predict_multiple, predict_single
 from .ui.ask_offset_ui import Ui_Dialog
 from .ui.main_window_ui import Ui_MainWindow
 from .utils import convert2QImage
-from playsound import playsound
 
 
 class AskInitOffset(QDialog):
@@ -48,8 +48,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi(self)
-        self.pose_model = YOLO(OBJECT_MODEL)
-        self.object_model = YOLO(POSE_MODEL)
+        self.pose_model = YOLO(POSE_MODEL)
+        self.object_model = YOLO(OBJECT_MODEL)
         self.offsets = DEFAULT_OFFSETS.copy()
 
         self.timer = QTimer()
@@ -166,7 +166,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 to_adj = False
                 print("No picture selected.")
-        self.offsets = adj_offsets(to_adj, self.offsets, file_path)
+        self.offsets = adj_offsets(
+            to_adj, self.offsets, file_path, self.pose_model, self.object_model
+        )
 
     def test(
         self, file: str | MatLike | list[str | MatLike]
@@ -181,9 +183,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             MatLike | list[MatLike]: The processed image or a list of processed images.
         """
         if isinstance(file, list):
-            image, behavior = predict_multiple(file, self.offsets)
+            image, behavior = predict_multiple(
+                file, self.pose_model, self.object_model, self.offsets
+            )
         else:
-            image, behavior = predict_single(file, self.offsets)
+            image, behavior = predict_single(
+                file, self.pose_model, self.object_model, self.offsets
+            )
         print(f"Is hand on stop button: {behavior.is_hand_on_stop.name}")
         print(f"Is hand on feed button: {behavior.is_hand_on_feed.name}")
         print(f"Does knife collide with base: {behavior.is_knife_base_collided.name}")
