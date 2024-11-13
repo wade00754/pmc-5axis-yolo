@@ -86,9 +86,9 @@ def predict_safe(
 
 
 # 測試單張影像
-def predict_single(
-    image: str | MatLike, pose_model: YOLO, object_model: YOLO, offsets: dict
-) -> tuple[MatLike, Behavior]:
+def result(
+    image: str | MatLike | list, pose_model: YOLO, object_model: YOLO, offsets: dict
+) -> list[MatLike]:
     # # 讀取影像
     # image_path = cv2.imread(image_path)
 
@@ -104,7 +104,9 @@ def predict_single(
     pose_results = pose_model.predict(image, conf=0.4)
 
     # 繪製姿態估計結果
-    pose_annotated_frame = pose_results[0].plot()
+    pose_annotated_frames = []
+    for pose_result in pose_results:
+        pose_annotated_frames.append(pose_result.plot())
 
     # ------------------------------
     # 步驟 2: 進行物件偵測
@@ -121,63 +123,69 @@ def predict_single(
     class_names = object_model.names
 
     # 複製姿態估計的結果框架以進行繪製
-    combined_frame = pose_annotated_frame.copy()
+    combined_frames = []
+    for object_result, pose_annotated_frame in zip(
+        object_results, pose_annotated_frames
+    ):
+        combined_frame = pose_annotated_frame.copy()
 
-    # 遍歷每一個偵測結果
-    for object in object_results[0].boxes:
-        # 獲取偵測框的座標
-        x1, y1, x2, y2 = map(int, object.xyxy[0].tolist())
+        # 遍歷每一個偵測結果
+        for object in object_result.boxes:
+            # 獲取偵測框的座標
+            x1, y1, x2, y2 = map(int, object.xyxy[0].tolist())
 
-        # 獲取物件的置信度
-        confidence = object.conf[0]
+            # 獲取物件的置信度
+            confidence = object.conf[0]
 
-        # 獲取物件的類別編號
-        class_id = int(object.cls[0])
+            # 獲取物件的類別編號
+            class_id = int(object.cls[0])
 
-        # 獲取物件的類別名稱
-        class_name = (
-            class_names[class_id]
-            if class_id < len(class_names)
-            else f"class_{class_id}"
-        )
+            # 獲取物件的類別名稱
+            class_name = (
+                class_names[class_id]
+                if class_id < len(class_names)
+                else f"class_{class_id}"
+            )
 
-        # 獲取對應的顏色
-        color = colors[class_id]
+            # 獲取對應的顏色
+            color = colors[class_id]
 
-        # 繪製偵測框
-        cv2.rectangle(combined_frame, (x1, y1), (x2, y2), color, 2)
+            # 繪製偵測框
+            cv2.rectangle(combined_frame, (x1, y1), (x2, y2), color, 2)
 
-        # 準備顯示的文字（類別名稱和置信度）
-        label = f"{class_name} {confidence:.2f}"
+            # 準備顯示的文字（類別名稱和置信度）
+            label = f"{class_name} {confidence:.2f}"
 
-        # 計算文字的寬高以確保文字不會超出框架
-        (text_width, text_height), _ = cv2.getTextSize(
-            label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1
-        )
+            # 計算文字的寬高以確保文字不會超出框架
+            (text_width, text_height), _ = cv2.getTextSize(
+                label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1
+            )
 
-        # 調整文字背景的位置以避免超出影像範圍
-        text_y1 = y1 - text_height - 4 if y1 - text_height - 4 > 0 else y1
+            # 調整文字背景的位置以避免超出影像範圍
+            text_y1 = y1 - text_height - 4 if y1 - text_height - 4 > 0 else y1
 
-        # 繪製文字背景
-        cv2.rectangle(
-            combined_frame,
-            (x1, text_y1),
-            (x1 + text_width, text_y1 + text_height + 4),
-            color,
-            -1,
-        )
+            # 繪製文字背景
+            cv2.rectangle(
+                combined_frame,
+                (x1, text_y1),
+                (x1 + text_width, text_y1 + text_height + 4),
+                color,
+                -1,
+            )
 
-        # 在框架上繪製文字
-        cv2.putText(
-            combined_frame,
-            label,
-            (x1, text_y1 + text_height + 2),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.5,
-            (255, 255, 255),
-            1,
-        )
+            # 在框架上繪製文字
+            cv2.putText(
+                combined_frame,
+                label,
+                (x1, text_y1 + text_height + 2),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (255, 255, 255),
+                1,
+            )
 
+            combined_frames.append(combined_frame)
+    # TODO: Fix predict_safe
     behavior = predict_safe(pose_results, object_results, offsets)
 
     return combined_frame, behavior
@@ -190,9 +198,7 @@ def predict_multiple(
     behaviors = Behavior()
 
     for image in images:
-        combined_frame, behavior = predict_single(
-            image, pose_model, object_model, offsets
-        )
+        combined_frame, behavior = result(image, pose_model, object_model, offsets)
         combined_frames.append(combined_frame)
 
         for field in fields(behavior):

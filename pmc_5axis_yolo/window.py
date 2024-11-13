@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
 from ultralytics import YOLO
 
 from .settings import DEFAULT_OFFSETS, OBJECT_MODEL, POSE_MODEL
-from .tasks import OffsetSlider, adj_offsets, predict_multiple, predict_single
+from .tasks import OffsetSlider, adj_offsets, predict_multiple, result
 from .ui.ask_offset_ui import Ui_Dialog
 from .ui.main_window_ui import Ui_MainWindow
 from .utils import convert2QImage
@@ -186,7 +186,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 file, self.pose_model, self.object_model, self.offsets
             )
         else:
-            image, behavior = predict_single(
+            image, behavior = result(
                 file, self.pose_model, self.object_model, self.offsets
             )
         print(f"Is hand on stop button: {behavior.is_hand_on_stop.name}")
