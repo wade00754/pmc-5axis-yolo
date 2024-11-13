@@ -3,7 +3,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QDialog
 from ultralytics import YOLO
 
-from ..settings import DEFAULT_OFFSETS, OBJECT_MODEL, POSE_MODEL
+from ..settings import DEFAULT_OFFSETS
 from ..ui.offset_slider_ui import Ui_Dialog
 from ..utils import extract_object_regions
 
@@ -104,13 +104,15 @@ def adj_offsets(
     to_adj: bool,
     offsets: dict,
     image: str | MatLike,
+    pose_model: YOLO,
+    object_model: YOLO,
 ) -> dict:  # similar to test_hand_on_button
     old_offsets = offsets.copy()  # save old offsets
 
     if to_adj:
         print("Adjusting offsets...")
-        object_results = YOLO(OBJECT_MODEL).predict(image, conf=0.3)
-        pose_results = YOLO(POSE_MODEL).predict(image, conf=0.4)
+        pose_results = pose_model.predict(image, conf=0.4)
+        object_results = object_model.predict(image, conf=0.3)
 
         # 獲取關鍵點 索引為: 9 是右手腕，10 是左手腕（根據 COCO 的姿態標註）
         keypoints = pose_results[0].keypoints.xy[0]
