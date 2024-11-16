@@ -71,6 +71,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.Label_HandFeed_Status.setText("Hand on Feed: N/A")
         self.Label_KnifeBaseCollid_status.setText("Knife Base Collided: N/A")
 
+        self.now_step = 1
+        self.steps_file = "SOP_step.txt"
+        self.steps_totals = self.get_step_count()
+        self.update_step_label()
+
         self.labels = [
             self.input_media,
             self.output_media,
@@ -88,6 +93,54 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.change_mode()
 
+    # ~~~~~~~~~~~~~~~~~~~~~~step labelr~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def update_step_label(self):
+
+        step_descriptions = [
+            (
+                self.get_step_description(self.now_step - 1)
+                if self.now_step > 1
+                else "N/A"
+            ),  # 上一步骤
+            self.get_step_description(self.now_step),  # 当前步骤
+            (
+                self.get_step_description(self.now_step + 1)
+                if self.now_step < self.steps_totals
+                else "N/A"
+            ),  # 下一步骤
+        ]
+
+        self.label_step_last.setText(f"last：{step_descriptions[0]}")
+        self.label_step_now.setText(f"now：{step_descriptions[1]}")
+        self.label_step_next.setText(f"next：{step_descriptions[2]}")
+
+    def get_step_description(self, step_number):
+        try:
+            with open(self.steps_file, "r", encoding="utf-8") as file:
+                steps = file.readlines()
+                if 0 < step_number <= len(steps):
+                    return steps[step_number - 1].strip()
+                else:
+                    return "N/A"
+        except FileNotFoundError:
+            return "FileOpenError"
+
+    def step_ToNext(self):
+        if self.now_step < self.steps_totals:
+            self.now_step += 1
+            self.update_step_label()
+
+    def step_ToPrevious(self):
+        if self.now_step > 1:
+            self.now_step -= 1
+            self.update_step_label()
+
+    def get_step_count(self):
+        with open(self.steps_file, "r") as file:
+            steps = file.readlines()
+        return len(steps)
+
+    # ~~~~~~~~~~~~~~~~~~~~~~     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def ask_for_offsets(self):
         dialog = AskInitOffset(self.set_offsets)
         dialog.exec()
@@ -321,6 +374,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.camera_change2.clicked.connect(self.change_camera_2)
         self.camera_change3.clicked.connect(self.change_camera_3)
         self.camera_change4.clicked.connect(self.change_camera_4)
+
+        self.button_step_last.clicked.connect(self.step_ToPrevious)
+        self.button_step_next.clicked.connect(self.step_ToNext)
 
         self.video_timer.timeout.connect(self.test_video)
         self.camera_timer.timeout.connect(self.test_camera)
