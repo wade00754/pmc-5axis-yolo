@@ -1,5 +1,7 @@
+import time
 from dataclasses import dataclass, fields
 from enum import Enum
+from turtle import st
 
 import cv2
 from cv2.typing import MatLike
@@ -24,10 +26,10 @@ class Behavior:
 
 # 測試手部是否在按鈕上
 def predict_safe(
-    pose_results: list[Results], object_results: list[Results], offsets: dict
+    pose_result: Results, object_result: Results, offsets: dict
 ) -> Behavior:
     # 獲取關鍵點 索引為: 9 是右手腕，10 是左手腕（根據 COCO 的姿態標註）
-    keypoints = pose_results[0].keypoints.xy[0]
+    keypoints = pose_result.keypoints.xy[0]
 
     # 取得右手與左手的座標 (x, y)
     if keypoints.numel() == 0:  # 沒有偵測到人
@@ -38,7 +40,7 @@ def predict_safe(
         right_hand = keypoints[10].tolist()  # (x, y) of right hand
 
     # 提取 stop、feed、knife 和 base 的範圍
-    regions = extract_object_regions(object_results, ["stop", "feed", "knife", "base"])
+    regions = extract_object_regions(object_result, ["stop", "feed", "knife", "base"])
 
     # 初始化手是否在按鈕上的變數
     behavior = Behavior()
@@ -86,9 +88,9 @@ def predict_safe(
 
 
 # 測試單張影像
-def result(
+def predict_result(
     image: str | MatLike | list, pose_model: YOLO, object_model: YOLO, offsets: dict
-) -> list[MatLike]:
+) -> tuple[list[MatLike], Behavior]:
     # # 讀取影像
     # image_path = cv2.imread(image_path)
 
@@ -123,7 +125,9 @@ def result(
     class_names = object_model.names
 
     # 複製姿態估計的結果框架以進行繪製
-    combined_frames = []
+    ret_combined_frames = []
+    behaviors = []
+
     for object_result, pose_annotated_frame in zip(
         object_results, pose_annotated_frames
     ):
@@ -184,36 +188,59 @@ def result(
                 1,
             )
 
-            combined_frames.append(combined_frame)
-    # TODO: Fix predict_safe
-    behavior = predict_safe(pose_results, object_results, offsets)
+        ret_combined_frames.append(combined_frame)
 
-    return combined_frame, behavior
+        behaviors.append(predict_safe(pose_result, object_result, offsets))
 
-
-def predict_multiple(
-    images: list[str | MatLike], pose_model: YOLO, object_model: YOLO, offsets: dict
-) -> tuple[list[MatLike], Behavior]:
-    combined_frames = []
-    behaviors = Behavior()
-
-    for image in images:
-        combined_frame, behavior = result(image, pose_model, object_model, offsets)
-        combined_frames.append(combined_frame)
-
-        for field in fields(behavior):
-            behavior_value = getattr(behavior, field.name)
-            behaviors_value = getattr(behaviors, field.name)
+    # TODO: behavior判斷不準確
+    ret_behavior = Behavior()
+    for b in behaviors:
+        for field in fields(b):
+            behavior_value = getattr(b, field.name)
+            ret_behavior_value = getattr(ret_behavior, field.name)
             if behavior_value != SafeState.UNDETECTED:
-                if behaviors_value == SafeState.UNDETECTED:
-                    setattr(behaviors, field, behavior_value)
+                if ret_behavior_value == SafeState.UNDETECTED:
+                    setattr(ret_behavior, field.name, behavior_value)
                 else:
-                    if field == "is_knife_base_collided":
-                        setattr(behaviors, field, behaviors_value or behavior_value)
+                    if field.name == "is_knife_base_collided":
+                        setattr(
+                            ret_behavior,
+                            field.name,
+                            behavior_value or ret_behavior_value,
+                        )
                     else:
-                        setattr(behaviors, field, behaviors_value and behavior_value)
+                        setattr(
+                            ret_behavior,
+                            field.name,
+                            behavior_value and ret_behavior_value,
+                        )
 
-    return combined_frames, behaviors
+    return ret_combined_frames, ret_behavior
+
+
+# def predict_multiple(
+#     images: list[str | MatLike], pose_model: YOLO, object_model: YOLO, offsets: dict
+# ) -> tuple[list[MatLike], Behavior]:
+#     combined_frames = []
+#     behaviors = Behavior()
+
+#     for image in images:
+#         combined_frame, behavior = result(image, pose_model, object_model, offsets)
+#         combined_frames.append(combined_frame)
+
+#         for field in fields(behavior):
+#             behavior_value = getattr(behavior, field.name)
+#             behaviors_value = getattr(behaviors, field.name)
+#             if behavior_value != SafeState.UNDETECTED:
+#                 if behaviors_value == SafeState.UNDETECTED:
+#                     setattr(behaviors, field, behavior_value)
+#                 else:
+#                     if field == "is_knife_base_collided":
+#                         setattr(behaviors, field, behaviors_value or behavior_value)
+#                     else:
+#                         setattr(behaviors, field, behaviors_value and behavior_value)
+
+#     return combined_frames, behaviors
 
 
 # # ------------------------------

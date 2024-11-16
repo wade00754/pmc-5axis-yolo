@@ -6,3 +6,4 @@ DEFAULT_OFFSETS = {
     "feed_x": 44,
     "feed_y": -10,
 }
+CAMERA_COUNT = 5  # MAX 5
