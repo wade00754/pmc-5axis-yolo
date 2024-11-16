@@ -36,12 +36,12 @@ class Region:
 
 
 def extract_object_regions(
-    object_results: list[Results], target_classes: list[str]
+    object_result: Results, target_classes: list[str]
 ) -> dict[str, Region]:
     """從物件偵測結果中提取指定類別的範圍（bounding boxes）."""
     regions = {class_name: None for class_name in target_classes}
 
-    for detection in object_results[0].boxes:
+    for detection in object_result.boxes:
         # 獲取偵測框的座標
         x1, y1, x2, y2 = map(int, detection.xyxy[0].tolist())
 
@@ -49,7 +49,7 @@ def extract_object_regions(
         class_id = int(detection.cls[0])
 
         # 獲取物件的類別名稱
-        class_name = object_results[0].names[class_id]
+        class_name = object_result.names[class_id]
 
         # 如果類別名稱符合目標類別，記錄其範圍
         if class_name in target_classes:
