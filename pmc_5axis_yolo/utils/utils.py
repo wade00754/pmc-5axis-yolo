@@ -2,6 +2,7 @@ import random
 from dataclasses import dataclass
 
 import cv2
+import numpy as np
 from cv2.typing import MatLike
 from PySide6.QtGui import QImage
 from ultralytics.engine.results import Results
@@ -25,6 +26,20 @@ def generate_colors(num_classes):
             random.randint(0, 255),
         )
     return colors
+
+
+# 計算兩點間的歐幾里得距離
+def calculate_distance(point1, point2):
+    return np.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
+
+
+# 計算三個點之間的夾角
+def calculate_angle(A, B, C):
+    ba = np.array([A[0] - B[0], A[1] - B[1]])
+    bc = np.array([C[0] - B[0], C[1] - B[1]])
+    cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+    angle = np.arccos(cosine_angle)
+    return np.degrees(angle)
 
 
 @dataclass(frozen=True)

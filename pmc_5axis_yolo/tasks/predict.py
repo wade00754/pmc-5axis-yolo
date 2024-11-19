@@ -1,14 +1,24 @@
-import time
 from dataclasses import dataclass, fields
 from enum import Enum
-from turtle import st
 
 import cv2
 from cv2.typing import MatLike
+from torch import Tensor
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
 
-from ..utils import extract_object_regions, generate_colors
+from ..settings import (
+    ARM_ANGLE_THRESHOLD,
+    ARM_BEND_THRESHOLD,
+    ARM_STRETCH_THRESHOLD,
+    LIE_THRESHOLD,
+)
+from ..utils import (
+    calculate_angle,
+    calculate_distance,
+    extract_object_regions,
+    generate_colors,
+)
 
 
 class SafeState(Enum):
@@ -17,27 +27,83 @@ class SafeState(Enum):
     UNDETECTED = 2
 
 
+class PoseState(Enum):
+    STAND = "Standing"
+    ARM_STRETCH = "Arm Stretching"
+    ARM_BEND = "Arm Bending"
+    LIE = "Lying"
+    UNKNOWN = "Unknown"
+
+
 @dataclass
 class Behavior:
     is_hand_on_stop: SafeState = SafeState.UNDETECTED
     is_hand_on_feed: SafeState = SafeState.UNDETECTED
     is_knife_base_collided: SafeState = SafeState.UNDETECTED
+    human_pose: PoseState = PoseState.UNKNOWN
 
 
-# 測試手部是否在按鈕上
+def classify_pose(keypoints: Tensor) -> PoseState:
+    left_shoulder = keypoints[5].tolist()
+    right_shoulder = keypoints[6].tolist()
+    left_elbow = keypoints[7].tolist()
+    right_elbow = keypoints[8].tolist()
+    left_wrist = keypoints[9].tolist()
+    right_wrist = keypoints[10].tolist()
+    left_hip = keypoints[11].tolist()
+    right_hip = keypoints[12].tolist()
+    left_knee = keypoints[13].tolist()
+    right_knee = keypoints[14].tolist()
+
+    avg_hip_y = (left_hip[1] + right_hip[1]) / 2
+    avg_knee_y = (left_knee[1] + right_knee[1]) / 2
+    avg_shoulder_y = (left_shoulder[1] + right_shoulder[1]) / 2
+
+    # 左右手伸直判斷
+    left_angle = calculate_angle(left_shoulder, left_elbow, left_wrist)
+    # left_distance = calculate_distance(left_wrist, left_shoulder)
+    right_angle = calculate_angle(right_shoulder, right_elbow, right_wrist)
+    # right_distance = calculate_distance(right_wrist, right_shoulder)
+
+    # 判斷蹲下或躺下
+    if avg_hip_y - avg_shoulder_y < LIE_THRESHOLD:
+        return PoseState.LIE
+    # 判斷站立
+    if (avg_hip_y != 0 and avg_shoulder_y != 0 and avg_hip_y > avg_shoulder_y) and (
+        avg_knee_y != 0 and avg_hip_y != 0 and avg_knee_y > avg_hip_y
+    ):
+        if (left_angle > ARM_ANGLE_THRESHOLD or right_angle > ARM_ANGLE_THRESHOLD) and (
+            (left_wrist[1] != 0 and avg_hip_y - left_wrist[1] > ARM_STRETCH_THRESHOLD)
+            or (
+                right_wrist[1] != 0
+                and avg_hip_y - right_wrist[1] > ARM_STRETCH_THRESHOLD
+            )
+        ):
+            return PoseState.ARM_STRETCH
+        elif (
+            left_wrist[1] != 0 and avg_hip_y - left_wrist[1] > ARM_BEND_THRESHOLD
+        ) or (right_wrist[1] != 0 and avg_hip_y - right_wrist[1] > ARM_BEND_THRESHOLD):
+            return PoseState.ARM_BEND
+        else:
+            return PoseState.STAND
+
+    return PoseState.UNKNOWN
+
+
+# 測試安全行為 (假設畫面中只有一個人)
 def predict_safe(
     pose_result: Results, object_result: Results, offsets: dict
 ) -> Behavior:
     # 獲取關鍵點 索引為: 9 是右手腕，10 是左手腕（根據 COCO 的姿態標註）
-    keypoints = pose_result.keypoints.xy[0]
+    keypoints = pose_result.keypoints
 
     # 取得右手與左手的座標 (x, y)
-    if keypoints.numel() == 0:  # 沒有偵測到人
+    if keypoints.xy[0].numel() == 0:  # 沒有偵測到人
         person = False
     else:
         person = True
-        left_hand = keypoints[9].tolist()  # (x, y) of left hand
-        right_hand = keypoints[10].tolist()  # (x, y) of right hand
+        left_hand = keypoints.xy[0][9].tolist()  # (x, y) of left hand
+        right_hand = keypoints.xy[0][10].tolist()  # (x, y) of right hand
 
     # 提取 stop、feed、knife 和 base 的範圍
     regions = extract_object_regions(object_result, ["stop", "feed", "knife", "base"])
@@ -83,6 +149,10 @@ def predict_safe(
             )
             else SafeState.NO
         )
+
+    # 判斷人的姿態
+    if person:
+        behavior.human_pose = classify_pose(keypoints.xyn[0])
 
     return behavior
 
@@ -198,22 +268,26 @@ def predict_result(
         for field in fields(b):
             behavior_value = getattr(b, field.name)
             ret_behavior_value = getattr(ret_behavior, field.name)
-            if behavior_value != SafeState.UNDETECTED:
-                if ret_behavior_value == SafeState.UNDETECTED:
-                    setattr(ret_behavior, field.name, behavior_value)
-                else:
-                    if field.name == "is_knife_base_collided":
-                        setattr(
-                            ret_behavior,
-                            field.name,
-                            behavior_value or ret_behavior_value,
-                        )
+            if isinstance(behavior_value, SafeState):
+                if behavior_value != SafeState.UNDETECTED:
+                    if ret_behavior_value == SafeState.UNDETECTED:
+                        setattr(ret_behavior, field.name, behavior_value)
                     else:
-                        setattr(
-                            ret_behavior,
-                            field.name,
-                            behavior_value and ret_behavior_value,
-                        )
+                        if field.name == "is_knife_base_collided":
+                            setattr(
+                                ret_behavior,
+                                field.name,
+                                behavior_value or ret_behavior_value,
+                            )
+                        else:
+                            setattr(
+                                ret_behavior,
+                                field.name,
+                                behavior_value and ret_behavior_value,
+                            )
+            else:
+                if behavior_value != PoseState.UNKNOWN:
+                    setattr(ret_behavior, field.name, behavior_value)
 
     return ret_combined_frames, ret_behavior
 

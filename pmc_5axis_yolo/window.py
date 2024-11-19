@@ -1,5 +1,6 @@
-import time
 import os
+import time
+
 import cv2
 from cv2.typing import MatLike
 from playsound import playsound
@@ -117,9 +118,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             ),  # 下一步骤
         ]
 
-        self.label_step_last.setText(f"{step_descriptions[0]}")
-        self.label_step_now.setText(f"{step_descriptions[1]}")
-        self.label_step_next.setText(f"{step_descriptions[2]}")
+        self.label_step_last.setText(f"last: {step_descriptions[0]}")
+        self.label_step_now.setText(f"now: {step_descriptions[1]}")
+        self.label_step_next.setText(f"next: {step_descriptions[2]}")
 
     def get_step_description(self, step_number):
         try:
@@ -249,6 +250,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print(f"Is hand on stop button: {behavior.is_hand_on_stop.name}")
         print(f"Is hand on feed button: {behavior.is_hand_on_feed.name}")
         print(f"Does knife collide with base: {behavior.is_knife_base_collided.name}")
+        print(f"Human pose: {behavior.human_pose.name}")
         self.Label_HandStop_Status.setText(
             f"Hand on Stop: {behavior.is_hand_on_stop.name}"
         )
@@ -336,13 +338,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.camera_on = 1
         self.change_mode()
 
-        # turn om camera from 0 to 4
+        # turn on camera from 0 to 4
         self.video = []
         for i in range(CAMERA_COUNT):
             print(f"Turning on camera {i}...")
-            self.video.append(cv2.VideoCapture(i))
-            if not self.video[i].isOpened():
+            vid = cv2.VideoCapture(i)
+            if not vid.isOpened():
                 print(f"Camera {i} did not turn on.")
+            else:
+                self.video.append(vid)
+
         video_fps = self.video[0].get(cv2.CAP_PROP_FPS)
         if video_fps == 0:
             video_fps = 60
@@ -399,6 +404,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def stop_test(self):
         for timer in self.timers:
             timer.stop()
+        for video in self.video:
+            video.release()
         print("STOP!")
 
     # 連結按鈕
