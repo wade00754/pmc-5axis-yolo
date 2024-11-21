@@ -146,9 +146,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dialog.exec()
 
     def change_mode(self):
-        self.output_media2.setVisible(self.camera_on)
-        self.output_media3.setVisible(self.camera_on)
-        self.output_media4.setVisible(self.camera_on)
+        for label in self.labels:
+            label.clear()
+            index = self.gridLayout.indexOf(label)
+            if index != -1:
+                row, column, _, _ = self.gridLayout.getItemPosition(index)
+                if row == 1 or column == 1:
+                    label.setVisible(self.camera_on)
         for button in self.camera_change_button:
             button.setVisible(self.camera_on)
         self.update_label_size()
@@ -279,10 +283,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print("No picture selected.")
 
     def test_picture(self, file_path):
-        self.input_media.setPixmap(QPixmap(file_path))
+        for label in self.labels:
+            if self.gridLayout_2.indexOf(label) != -1:
+                label.setPixmap(QPixmap(file_path))
         print("Testing picture...")
         image = self.test(file_path)[0]
-        self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
+        for label in self.labels:
+            if self.gridLayout.indexOf(label) != -1 and label.isVisible:
+                label.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
     # 影片
     def open_video(self):
@@ -309,8 +317,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             image = self.test(frame)[0]
             print("Testing video...")
-            self.input_media.setPixmap(QPixmap.fromImage(convert2QImage(frame)))
-            self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
+            for label in self.labels:
+                if self.gridLayout_2.indexOf(label) != -1:
+                    label.setPixmap(QPixmap.fromImage(convert2QImage(frame)))
+            for label in self.labels:
+                if self.gridLayout.indexOf(label) != -1 and label.isVisible:
+                    label.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~camera test~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def open_camera(self):
@@ -403,8 +415,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         new_height = width * 0.45 / self.aspect_ratio
 
         if self.camera_on == 0:
-            self.input_media.setFixedSize(int(new_width), int(new_height))
-            self.output_media.setFixedSize(int(new_width), int(new_height))
+            for label in self.labels:
+                if self.gridLayout_2.indexOf(label) != -1 or (
+                    self.gridLayout.indexOf(label) != -1 and label.isVisible()
+                ):
+                    label.setFixedSize(int(new_width), int(new_height))
+
         elif self.camera_on == 1:
             output_width = int(new_width / 2)
             output_height = int(new_height / 2)
