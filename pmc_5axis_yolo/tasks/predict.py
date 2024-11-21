@@ -1,5 +1,7 @@
+import time
 from dataclasses import dataclass, fields
 from enum import Enum
+from turtle import st
 
 import cv2
 from cv2.typing import MatLike
@@ -24,10 +26,10 @@ class Behavior:
 
 # 測試手部是否在按鈕上
 def predict_safe(
-    pose_results: list[Results], object_results: list[Results], offsets: dict
+    pose_result: Results, object_result: Results, offsets: dict
 ) -> Behavior:
     # 獲取關鍵點 索引為: 9 是右手腕，10 是左手腕（根據 COCO 的姿態標註）
-    keypoints = pose_results[0].keypoints.xy[0]
+    keypoints = pose_result.keypoints.xy[0]
 
     # 取得右手與左手的座標 (x, y)
     if keypoints.numel() == 0:  # 沒有偵測到人
@@ -38,7 +40,7 @@ def predict_safe(
         right_hand = keypoints[10].tolist()  # (x, y) of right hand
 
     # 提取 stop、feed、knife 和 base 的範圍
-    regions = extract_object_regions(object_results, ["stop", "feed", "knife", "base"])
+    regions = extract_object_regions(object_result, ["stop", "feed", "knife", "base"])
 
     # 初始化手是否在按鈕上的變數
     behavior = Behavior()
@@ -86,9 +88,9 @@ def predict_safe(
 
 
 # 測試單張影像
-def predict_single(
-    image: str | MatLike, pose_model: YOLO, object_model: YOLO, offsets: dict
-) -> tuple[MatLike, Behavior]:
+def predict_result(
+    image: str | MatLike | list, pose_model: YOLO, object_model: YOLO, offsets: dict
+) -> tuple[list[MatLike], Behavior]:
     # # 讀取影像
     # image_path = cv2.imread(image_path)
 
@@ -104,7 +106,9 @@ def predict_single(
     pose_results = pose_model.predict(image, conf=0.4)
 
     # 繪製姿態估計結果
-    pose_annotated_frame = pose_results[0].plot()
+    pose_annotated_frames = []
+    for pose_result in pose_results:
+        pose_annotated_frames.append(pose_result.plot())
 
     # ------------------------------
     # 步驟 2: 進行物件偵測
@@ -121,93 +125,122 @@ def predict_single(
     class_names = object_model.names
 
     # 複製姿態估計的結果框架以進行繪製
-    combined_frame = pose_annotated_frame.copy()
+    ret_combined_frames = []
+    behaviors = []
 
-    # 遍歷每一個偵測結果
-    for object in object_results[0].boxes:
-        # 獲取偵測框的座標
-        x1, y1, x2, y2 = map(int, object.xyxy[0].tolist())
+    for object_result, pose_annotated_frame in zip(
+        object_results, pose_annotated_frames
+    ):
+        combined_frame = pose_annotated_frame.copy()
 
-        # 獲取物件的置信度
-        confidence = object.conf[0]
+        # 遍歷每一個偵測結果
+        for object in object_result.boxes:
+            # 獲取偵測框的座標
+            x1, y1, x2, y2 = map(int, object.xyxy[0].tolist())
 
-        # 獲取物件的類別編號
-        class_id = int(object.cls[0])
+            # 獲取物件的置信度
+            confidence = object.conf[0]
 
-        # 獲取物件的類別名稱
-        class_name = (
-            class_names[class_id]
-            if class_id < len(class_names)
-            else f"class_{class_id}"
-        )
+            # 獲取物件的類別編號
+            class_id = int(object.cls[0])
 
-        # 獲取對應的顏色
-        color = colors[class_id]
+            # 獲取物件的類別名稱
+            class_name = (
+                class_names[class_id]
+                if class_id < len(class_names)
+                else f"class_{class_id}"
+            )
 
-        # 繪製偵測框
-        cv2.rectangle(combined_frame, (x1, y1), (x2, y2), color, 2)
+            # 獲取對應的顏色
+            color = colors[class_id]
 
-        # 準備顯示的文字（類別名稱和置信度）
-        label = f"{class_name} {confidence:.2f}"
+            # 繪製偵測框
+            cv2.rectangle(combined_frame, (x1, y1), (x2, y2), color, 2)
 
-        # 計算文字的寬高以確保文字不會超出框架
-        (text_width, text_height), _ = cv2.getTextSize(
-            label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1
-        )
+            # 準備顯示的文字（類別名稱和置信度）
+            label = f"{class_name} {confidence:.2f}"
 
-        # 調整文字背景的位置以避免超出影像範圍
-        text_y1 = y1 - text_height - 4 if y1 - text_height - 4 > 0 else y1
+            # 計算文字的寬高以確保文字不會超出框架
+            (text_width, text_height), _ = cv2.getTextSize(
+                label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1
+            )
 
-        # 繪製文字背景
-        cv2.rectangle(
-            combined_frame,
-            (x1, text_y1),
-            (x1 + text_width, text_y1 + text_height + 4),
-            color,
-            -1,
-        )
+            # 調整文字背景的位置以避免超出影像範圍
+            text_y1 = y1 - text_height - 4 if y1 - text_height - 4 > 0 else y1
 
-        # 在框架上繪製文字
-        cv2.putText(
-            combined_frame,
-            label,
-            (x1, text_y1 + text_height + 2),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.5,
-            (255, 255, 255),
-            1,
-        )
+            # 繪製文字背景
+            cv2.rectangle(
+                combined_frame,
+                (x1, text_y1),
+                (x1 + text_width, text_y1 + text_height + 4),
+                color,
+                -1,
+            )
 
-    behavior = predict_safe(pose_results, object_results, offsets)
+            # 在框架上繪製文字
+            cv2.putText(
+                combined_frame,
+                label,
+                (x1, text_y1 + text_height + 2),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (255, 255, 255),
+                1,
+            )
 
-    return combined_frame, behavior
+        ret_combined_frames.append(combined_frame)
 
+        behaviors.append(predict_safe(pose_result, object_result, offsets))
 
-def predict_multiple(
-    images: list[str | MatLike], pose_model: YOLO, object_model: YOLO, offsets: dict
-) -> tuple[list[MatLike], Behavior]:
-    combined_frames = []
-    behaviors = Behavior()
-
-    for image in images:
-        combined_frame, behavior = predict_single(
-            image, pose_model, object_model, offsets
-        )
-        combined_frames.append(combined_frame)
-
-        for field in fields(behavior):
-            behavior_value = getattr(behavior, field.name)
-            behaviors_value = getattr(behaviors, field.name)
+    # TODO: behavior判斷不準確
+    ret_behavior = Behavior()
+    for b in behaviors:
+        for field in fields(b):
+            behavior_value = getattr(b, field.name)
+            ret_behavior_value = getattr(ret_behavior, field.name)
             if behavior_value != SafeState.UNDETECTED:
-                if behaviors_value == SafeState.UNDETECTED:
-                    setattr(behaviors, field, behavior_value)
+                if ret_behavior_value == SafeState.UNDETECTED:
+                    setattr(ret_behavior, field.name, behavior_value)
                 else:
-                    if field == "is_knife_base_collided":
-                        setattr(behaviors, field, behaviors_value or behavior_value)
+                    if field.name == "is_knife_base_collided":
+                        setattr(
+                            ret_behavior,
+                            field.name,
+                            behavior_value or ret_behavior_value,
+                        )
                     else:
-                        setattr(behaviors, field, behaviors_value and behavior_value)
+                        setattr(
+                            ret_behavior,
+                            field.name,
+                            behavior_value and ret_behavior_value,
+                        )
 
-    return combined_frames, behaviors
+    return ret_combined_frames, ret_behavior
+
+
+# def predict_multiple(
+#     images: list[str | MatLike], pose_model: YOLO, object_model: YOLO, offsets: dict
+# ) -> tuple[list[MatLike], Behavior]:
+#     combined_frames = []
+#     behaviors = Behavior()
+
+#     for image in images:
+#         combined_frame, behavior = result(image, pose_model, object_model, offsets)
+#         combined_frames.append(combined_frame)
+
+#         for field in fields(behavior):
+#             behavior_value = getattr(behavior, field.name)
+#             behaviors_value = getattr(behaviors, field.name)
+#             if behavior_value != SafeState.UNDETECTED:
+#                 if behaviors_value == SafeState.UNDETECTED:
+#                     setattr(behaviors, field, behavior_value)
+#                 else:
+#                     if field == "is_knife_base_collided":
+#                         setattr(behaviors, field, behaviors_value or behavior_value)
+#                     else:
+#                         setattr(behaviors, field, behaviors_value and behavior_value)
+
+#     return combined_frames, behaviors
 
 
 # # ------------------------------

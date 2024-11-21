@@ -1,5 +1,4 @@
-import re
-from math import e
+import time
 
 import cv2
 from cv2.typing import MatLike
@@ -18,8 +17,8 @@ from PySide6.QtWidgets import (
 )
 from ultralytics import YOLO
 
-from .settings import DEFAULT_OFFSETS, OBJECT_MODEL, POSE_MODEL
-from .tasks import OffsetSlider, adj_offsets, predict_multiple, predict_single
+from .settings import CAMERA_COUNT, DEFAULT_OFFSETS, OBJECT_MODEL, POSE_MODEL
+from .tasks import OffsetSlider, adj_offsets, predict_result
 from .ui.ask_offset_ui import Ui_Dialog
 from .ui.main_window_ui import Ui_MainWindow
 from .utils import convert2QImage
@@ -222,9 +221,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             to_adj, self.offsets, file_path, self.pose_model, self.object_model
         )
 
-    def test(
-        self, file: str | MatLike | list[str | MatLike]
-    ) -> MatLike | list[MatLike]:
+    def test(self, file: str | MatLike | list[str | MatLike]) -> list[MatLike]:
         """
         Test an image or a single video frame and return the result.
 
@@ -232,16 +229,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             file (str | MatLike | list[str | MatLike]): The file path or the image to test. It can also be a list of file paths or images.
 
         Returns:
-            MatLike | list[MatLike]: The processed image or a list of processed images.
+            list[MatLike]: The processed images in a list.
         """
-        if isinstance(file, list):
-            image, behavior = predict_multiple(
-                file, self.pose_model, self.object_model, self.offsets
-            )
-        else:
-            image, behavior = predict_single(
-                file, self.pose_model, self.object_model, self.offsets
-            )
+
+        image, behavior = predict_result(
+            file, self.pose_model, self.object_model, self.offsets
+        )
         print(f"Is hand on stop button: {behavior.is_hand_on_stop.name}")
         print(f"Is hand on feed button: {behavior.is_hand_on_feed.name}")
         print(f"Does knife collide with base: {behavior.is_knife_base_collided.name}")
@@ -288,7 +281,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def test_picture(self, file_path):
         self.input_media.setPixmap(QPixmap(file_path))
         print("Testing picture...")
-        image = self.test(file_path)
+        image = self.test(file_path)[0]
         self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
     # 影片
@@ -314,7 +307,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not ret:
             self.video_timer.stop()
         else:
-            image = self.test(frame)
+            image = self.test(frame)[0]
             print("Testing video...")
             self.input_media.setPixmap(QPixmap.fromImage(convert2QImage(frame)))
             self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
@@ -326,7 +319,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # turn om camera from 0 to 4
         self.video = []
-        for i in range(5):
+        for i in range(CAMERA_COUNT):
             print(f"Turning on camera {i}...")
             self.video.append(cv2.VideoCapture(i))
             if not self.video[i].isOpened():

@@ -122,7 +122,7 @@ def adj_offsets(
         right_hand = keypoints[10].tolist()  # (x, y) of right hand
 
         # 提取 stop 和 feed 按鈕的範圍
-        regions = extract_object_regions(object_results, ["stop", "feed"])
+        regions = extract_object_regions(object_results[0], ["stop", "feed"])
 
         # 判斷左手和 Stop 按鈕的相對位置
         if regions["stop"]:
