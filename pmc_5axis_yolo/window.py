@@ -398,9 +398,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.update_label_size()
 
     def update_label_size(self):
-        height = self.size().height()
-        new_width = height * self.aspect_ratio * 0.6
-        new_height = height * 0.6
+        width = self.size().width()
+        new_width = width * 0.45
+        new_height = width * 0.45 / self.aspect_ratio
 
         if self.camera_on == 0:
             self.input_media.setFixedSize(int(new_width), int(new_height))
