@@ -262,10 +262,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         if behavior.is_hand_on_stop.name == "NO":
             print("Hand not on stop button! Playing sound alert.")
-            playsound("warning.mp3")
+            playsound("warning.mp3", block=False)
         if behavior.is_hand_on_feed.name == "NO":
             print("Hand not on stop button! Playing sound alert.")
-            playsound("warning.mp3")
+            playsound("warning.mp3", block=False)
 
         return image
 
@@ -356,6 +356,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.camera_timer.start()
 
     def test_camera(self):
+        print("==================")
+
         frames = []
         for idx, video in enumerate(self.video):
             ret, frame = video.read()
@@ -389,6 +391,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.output_media3.setPixmap(QPixmap.fromImage(convert2QImage(image)))
             elif idx == 4:
                 self.output_media4.setPixmap(QPixmap.fromImage(convert2QImage(image)))
+        print("==================\n")
 
     def now_big_camera(self):
         now_camera_n = 0

@@ -3,7 +3,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QDialog
 from ultralytics import YOLO
 
-from ..settings import DEFAULT_OFFSETS
+from ..settings import DEFAULT_OFFSETS, PREDICT_VERBOSE
 from ..ui.offset_slider_ui import Ui_Dialog
 from ..utils import extract_object_regions
 
@@ -111,8 +111,8 @@ def adj_offsets(
 
     if to_adj:
         print("Adjusting offsets...")
-        pose_results = pose_model.predict(image, conf=0.4)
-        object_results = object_model.predict(image, conf=0.3)
+        pose_results = pose_model.predict(image, conf=0.4, verbose=PREDICT_VERBOSE)
+        object_results = object_model.predict(image, conf=0.3, verbose=PREDICT_VERBOSE)
 
         # 獲取關鍵點 索引為: 9 是右手腕，10 是左手腕（根據 COCO 的姿態標註）
         keypoints = pose_results[0].keypoints.xy[0]

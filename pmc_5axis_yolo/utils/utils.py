@@ -15,8 +15,8 @@ def convert2QImage(img: MatLike) -> QImage:
     return QImage(img.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
 
 
-# 定義一個函數來生成隨機顏色
 def generate_colors(num_classes):
+    """生成隨機顏色"""
     random.seed(42)  # 設定隨機種子以確保顏色一致
     colors = {}
     for i in range(num_classes):
@@ -35,6 +35,7 @@ def calculate_distance(point1, point2):
 
 # 計算三個點之間的夾角
 def calculate_angle(A, B, C):
+    """Calculate Angle ABC"""
     ba = np.array([A[0] - B[0], A[1] - B[1]])
     bc = np.array([C[0] - B[0], C[1] - B[1]])
     cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))

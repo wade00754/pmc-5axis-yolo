@@ -12,6 +12,7 @@ from ..settings import (
     ARM_BEND_THRESHOLD,
     ARM_STRETCH_THRESHOLD,
     LIE_THRESHOLD,
+    PREDICT_VERBOSE,
 )
 from ..utils import (
     calculate_angle,
@@ -66,7 +67,10 @@ def classify_pose(keypoints: Tensor) -> PoseState:
     # right_distance = calculate_distance(right_wrist, right_shoulder)
 
     # 判斷蹲下或躺下
-    if avg_hip_y - avg_shoulder_y < LIE_THRESHOLD:
+    if (
+        avg_hip_y - avg_shoulder_y < LIE_THRESHOLD
+        or avg_knee_y - avg_hip_y < LIE_THRESHOLD
+    ):
         return PoseState.LIE
     # 判斷站立
     if (avg_hip_y != 0 and avg_shoulder_y != 0 and avg_hip_y > avg_shoulder_y) and (
@@ -172,8 +176,8 @@ def predict_result(
     # 步驟 1: 進行姿態估計
     # ------------------------------
     # 使用 YOLOv8n-pose 進行姿態估計
-    print("==================\nPredicting pose...")
-    pose_results = pose_model.predict(image, conf=0.4)
+    print("Predicting pose...")
+    pose_results = pose_model.predict(image, conf=0.5, verbose=PREDICT_VERBOSE)
 
     # 繪製姿態估計結果
     pose_annotated_frames = []
@@ -184,8 +188,8 @@ def predict_result(
     # 步驟 2: 進行物件偵測
     # ------------------------------
     # 使用你自訓練的物件偵測模型進行偵測
-    print("==================\nPredicting objects...")
-    object_results = object_model.predict(image, conf=0.3)
+    print("Predicting objects...")
+    object_results = object_model.predict(image, conf=0.3, verbose=PREDICT_VERBOSE)
 
     # 獲取類別數量（假設類別編號從 0 開始連續編號）
     num_classes = len(object_model.names)
