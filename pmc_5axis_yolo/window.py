@@ -1,6 +1,8 @@
 import os
 import time
 
+from winsound import SND_ASYNC, PlaySound
+
 import cv2
 from cv2.typing import MatLike
 from playsound import playsound
@@ -262,10 +264,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         if behavior.is_hand_on_stop.name == "NO":
             print("Hand not on stop button! Playing sound alert.")
-            playsound("warning.mp3", block=False)
+            PlaySound("warning", SND_ASYNC)  # only works on windows
+            # playsound("warning.mp3", block=False) # this module has lots of bugs
         if behavior.is_hand_on_feed.name == "NO":
             print("Hand not on stop button! Playing sound alert.")
-            playsound("warning.mp3", block=False)
+            PlaySound("warning", SND_ASYNC)  # only works on windows
+            # playsound("warning.mp3", block=False) # this module has lots of bugs
 
         return image
 
