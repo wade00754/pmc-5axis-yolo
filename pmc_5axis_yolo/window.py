@@ -1,5 +1,5 @@
 import time
-
+import os
 import cv2
 from cv2.typing import MatLike
 from playsound import playsound
@@ -75,6 +75,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.steps_file = "SOP_step.txt"
         self.steps_totals = self.get_step_count()
         self.update_step_label()
+        self.label_step_last.setStyleSheet("color: rgba(255, 255, 255, 128);")
+        self.label_step_next.setStyleSheet("color: rgba(255, 255, 255, 128);")
+
+        self.target_folder = "captured_images"
+        os.makedirs(self.target_folder, exist_ok=True)
+        self.take_picture_flag = False
 
         self.labels = [
             self.input_media,
@@ -89,6 +95,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.camera_change2,
             self.camera_change3,
             self.camera_change4,
+            self.button_takepicture,
         ]
 
         self.change_mode()
@@ -110,9 +117,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             ),  # 下一步骤
         ]
 
-        self.label_step_last.setText(f"last：{step_descriptions[0]}")
-        self.label_step_now.setText(f"now：{step_descriptions[1]}")
-        self.label_step_next.setText(f"next：{step_descriptions[2]}")
+        self.label_step_last.setText(f"{step_descriptions[0]}")
+        self.label_step_now.setText(f"{step_descriptions[1]}")
+        self.label_step_next.setText(f"{step_descriptions[2]}")
 
     def get_step_description(self, step_number):
         try:
@@ -289,7 +296,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print("Testing picture...")
         image = self.test(file_path)[0]
         for label in self.labels:
-            if self.gridLayout.indexOf(label) != -1 and label.isVisible:
+            if self.gridLayout.indexOf(label) != -1 and label.isVisible():
                 label.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
     # 影片
@@ -356,6 +363,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 frames.append(frame)
                 print(f"Appended camera {idx}...")
 
+            now_big_camera = self.which_camera_big()
+            if self.take_picture_flag and idx == now_big_camera:
+                filename = os.path.join(
+                    self.target_folder,
+                    f"captured_{idx}_{time.strftime('%Y%m%d_%H%M%S')}.jpg",
+                )
+                cv2.imwrite(filename, frame)
+                print(f"saved {filename}")
+                self.take_picture_flag = False
+
         images = self.test(frames)
         for idx, image in enumerate(images):
             if idx == 0:
@@ -369,6 +386,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             elif idx == 4:
                 self.output_media4.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
+    def which_camera_big(self):
+        big_camera = 0
+        for label in self.labels:
+            if self.gridLayout_2.indexOf(label) != -1:
+                return big_camera
+            big_camera += 1
+        print("no camera open!")
+
+    def take_picture_signal(self):
+        self.take_picture_flag = True
+
     def stop_test(self):
         for timer in self.timers:
             timer.stop()
@@ -381,6 +409,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.button_camera.clicked.connect(self.open_camera)
         self.button_offset.clicked.connect(self.open_offset_slider)
         self.button_stop.clicked.connect(self.stop_test)
+        self.button_takepicture.clicked.connect(self.take_picture_signal)
 
         self.camera_change1.clicked.connect(self.change_camera_1)
         self.camera_change2.clicked.connect(self.change_camera_2)
