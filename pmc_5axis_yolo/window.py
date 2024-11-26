@@ -381,6 +381,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 print(f"saved {filename}")
                 self.take_picture_flag = False
 
+            now_big_camera = self.which_camera_big()
+            if self.take_picture_flag and idx == now_big_camera:
+                filename = os.path.join(
+                    self.target_folder,
+                    f"captured_{idx}_{time.strftime('%Y%m%d_%H%M%S')}.jpg",
+                )
+                cv2.imwrite(filename, frame)
+                print(f"saved {filename}")
+                self.take_picture_flag = False
+
         images = self.test(frames)
         for idx, image in enumerate(images):
             if idx == 0:
@@ -402,7 +412,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 return big_camera
             big_camera += 1
         print("no camera open!")
-
 
 
     def take_picture_signal(self):
