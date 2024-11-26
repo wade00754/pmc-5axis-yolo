@@ -372,7 +372,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 print(f"saved {filename}")
                 self.take_picture_flag = False
 
-            if self.take_picture_flag and idx == 0:
+            if self.take_picture_flag and idx == self.now_big_camera():
                 filename = os.path.join(
                     self.target_folder,
                     f"captured_{idx}_{time.strftime('%Y%m%d_%H%M%S')}.jpg",
@@ -405,13 +405,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.output_media4.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
 
-    def which_camera_big(self):
-        big_camera = 0
+    def now_big_camera(self):
+        now_camera_n = 0
         for label in self.labels:
             if self.gridLayout_2.indexOf(label) != -1:
-                return big_camera
-            big_camera += 1
-        print("no camera open!")
+                return now_camera_n
+            now_camera_n += 1
+        print("now big camera")
 
 
     def take_picture_signal(self):
