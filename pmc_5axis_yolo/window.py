@@ -362,8 +362,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 frames.append(frame)
                 print(f"Appended camera {idx}...")
+            now_big_camera = self.which_camera_big()
+            if self.take_picture_flag and idx == now_big_camera:
+                filename = os.path.join(
+                    self.target_folder,
+                    f"captured_{idx}_{time.strftime('%Y%m%d_%H%M%S')}.jpg",
+                )
+                cv2.imwrite(filename, frame)
+                print(f"saved {filename}")
+                self.take_picture_flag = False
 
             if self.take_picture_flag and idx == self.now_big_camera():
+                filename = os.path.join(
+                    self.target_folder,
+                    f"captured_{idx}_{time.strftime('%Y%m%d_%H%M%S')}.jpg",
+                )
+                cv2.imwrite(filename, frame)
+                print(f"saved {filename}")
+                self.take_picture_flag = False
+
+            now_big_camera = self.which_camera_big()
+            if self.take_picture_flag and idx == now_big_camera:
                 filename = os.path.join(
                     self.target_folder,
                     f"captured_{idx}_{time.strftime('%Y%m%d_%H%M%S')}.jpg",
@@ -385,6 +404,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             elif idx == 4:
                 self.output_media4.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
+
     def now_big_camera(self):
         now_camera_n = 0
         for label in self.labels:
@@ -392,6 +412,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 return now_camera_n
             now_camera_n += 1
         print("now big camera")
+
 
     def take_picture_signal(self):
         self.take_picture_flag = True
