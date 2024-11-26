@@ -1,7 +1,6 @@
 import os
 import time
-
-from winsound import SND_ASYNC, PlaySound
+import winsound
 
 import cv2
 from cv2.typing import MatLike
@@ -264,11 +263,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         if behavior.is_hand_on_stop.name == "NO":
             print("Hand not on stop button! Playing sound alert.")
-            PlaySound("warning", SND_ASYNC)  # only works on windows
+            try:
+                winsound.PlaySound(
+                    "warning", winsound.SND_ASYNC | winsound.SND_NOSTOP
+                )  # only works on windows
+            except:
+                pass
             # playsound("warning.mp3", block=False) # this module has lots of bugs
         if behavior.is_hand_on_feed.name == "NO":
             print("Hand not on stop button! Playing sound alert.")
-            PlaySound("warning", SND_ASYNC)  # only works on windows
+            try:
+                winsound.PlaySound(
+                    "warning", winsound.SND_ASYNC | winsound.SND_NOSTOP
+                )  # only works on windows
+            except:
+                pass
             # playsound("warning.mp3", block=False) # this module has lots of bugs
 
         return image
@@ -346,11 +355,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.video = []
         for i in range(CAMERA_COUNT):
             print(f"Turning on camera {i}...")
-            vid = cv2.VideoCapture(i)
-            if not vid.isOpened():
+            cap = cv2.VideoCapture(i, cv2.CAP_DSHOW)  # this is the magic!
+
+            cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+            if not cap.isOpened():
                 print(f"Camera {i} did not turn on.")
             else:
-                self.video.append(vid)
+                self.video.append(cap)
+                print(
+                    f"Camera {i} is on. Resolution: {cap.get(cv2.CAP_PROP_FRAME_WIDTH)}x{cap.get(cv2.CAP_PROP_FRAME_HEIGHT)}"
+                )
 
         video_fps = self.video[0].get(cv2.CAP_PROP_FPS)
         if video_fps == 0:
