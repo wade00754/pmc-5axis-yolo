@@ -24,13 +24,13 @@ class OffsetSlider(QDialog, Ui_Dialog):
         self.initial_feed_y = initial_feed_y
 
         # 滑桿預設
-        self.Stop_X_Slider.setRange(-100, 100)
+        self.Stop_X_Slider.setRange(-250, 250)
         self.Stop_X_Slider.setValue(initial_stop_x)
-        self.Stop_Y_Slider.setRange(-100, 100)
+        self.Stop_Y_Slider.setRange(-250, 250)
         self.Stop_Y_Slider.setValue(initial_stop_y)
-        self.Feed_X_Slider.setRange(-100, 100)
+        self.Feed_X_Slider.setRange(-250, 250)
         self.Feed_X_Slider.setValue(initial_feed_x)
-        self.Feed_Y_Slider.setRange(-100, 100)
+        self.Feed_Y_Slider.setRange(-250, 250)
         self.Feed_Y_Slider.setValue(initial_feed_y)
         self.update_offsets()
 
