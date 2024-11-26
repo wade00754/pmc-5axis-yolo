@@ -1,5 +1,7 @@
-import time
 import os
+import time
+import winsound
+
 import cv2
 from cv2.typing import MatLike
 from playsound import playsound
@@ -117,9 +119,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             ),  # 下一步骤
         ]
 
-        self.label_step_last.setText(f"{step_descriptions[0]}")
-        self.label_step_now.setText(f"{step_descriptions[1]}")
-        self.label_step_next.setText(f"{step_descriptions[2]}")
+        self.label_step_last.setText(f"last: {step_descriptions[0]}")
+        self.label_step_now.setText(f"now: {step_descriptions[1]}")
+        self.label_step_next.setText(f"next: {step_descriptions[2]}")
 
     def get_step_description(self, step_number):
         try:
@@ -249,6 +251,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print(f"Is hand on stop button: {behavior.is_hand_on_stop.name}")
         print(f"Is hand on feed button: {behavior.is_hand_on_feed.name}")
         print(f"Does knife collide with base: {behavior.is_knife_base_collided.name}")
+        print(f"Human pose: {behavior.human_pose.name}")
         self.Label_HandStop_Status.setText(
             f"Hand on Stop: {behavior.is_hand_on_stop.name}"
         )
@@ -260,10 +263,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         if behavior.is_hand_on_stop.name == "NO":
             print("Hand not on stop button! Playing sound alert.")
-            playsound("warning.mp3")
+            try:
+                winsound.PlaySound(
+                    "warning", winsound.SND_ASYNC | winsound.SND_NOSTOP
+                )  # only works on windows
+            except:
+                pass
+            # playsound("warning.mp3", block=False) # this module has lots of bugs
         if behavior.is_hand_on_feed.name == "NO":
             print("Hand not on stop button! Playing sound alert.")
-            playsound("warning.mp3")
+            try:
+                winsound.PlaySound(
+                    "warning", winsound.SND_ASYNC | winsound.SND_NOSTOP
+                )  # only works on windows
+            except:
+                pass
+            # playsound("warning.mp3", block=False) # this module has lots of bugs
 
         return image
 
@@ -336,13 +351,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.camera_on = 1
         self.change_mode()
 
-        # turn om camera from 0 to 4
+        # turn on camera from 0 to 4
         self.video = []
         for i in range(CAMERA_COUNT):
             print(f"Turning on camera {i}...")
-            self.video.append(cv2.VideoCapture(i))
-            if not self.video[i].isOpened():
+            cap = cv2.VideoCapture(i, cv2.CAP_DSHOW)  # this is the magic!
+
+            cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+            if not cap.isOpened():
                 print(f"Camera {i} did not turn on.")
+            else:
+                self.video.append(cap)
+                print(
+                    f"Camera {i} is on. Resolution: {cap.get(cv2.CAP_PROP_FRAME_WIDTH)}x{cap.get(cv2.CAP_PROP_FRAME_HEIGHT)}"
+                )
+
         video_fps = self.video[0].get(cv2.CAP_PROP_FPS)
         if video_fps == 0:
             video_fps = 60
@@ -351,6 +375,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.camera_timer.start()
 
     def test_camera(self):
+        print("==================")
+
         frames = []
         for idx, video in enumerate(self.video):
             ret, frame = video.read()
@@ -384,6 +410,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.output_media3.setPixmap(QPixmap.fromImage(convert2QImage(image)))
             elif idx == 4:
                 self.output_media4.setPixmap(QPixmap.fromImage(convert2QImage(image)))
+        print("==================\n")
 
     def now_big_camera(self):
         now_camera_n = 0
@@ -399,6 +426,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def stop_test(self):
         for timer in self.timers:
             timer.stop()
+        for video in self.video:
+            video.release()
         print("STOP!")
 
     # 連結按鈕
