@@ -23,11 +23,17 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(892, 554)
+        MainWindow.resize(1030, 546)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.gridLayout_3 = QGridLayout(self.centralwidget)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
+        self.horizontalSpacer_6 = QSpacerItem(107, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout_3.addItem(self.horizontalSpacer_6, 0, 0, 1, 1)
+
+        self.verticalLayout_7 = QVBoxLayout()
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.verticalLayout_4 = QVBoxLayout()
@@ -63,11 +69,6 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addItem(self.horizontalSpacer_3)
 
-        self.button_step_last = QPushButton(self.centralwidget)
-        self.button_step_last.setObjectName(u"button_step_last")
-
-        self.horizontalLayout.addWidget(self.button_step_last)
-
         self.verticalLayout_3 = QVBoxLayout()
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.label_step_last = QLabel(self.centralwidget)
@@ -88,10 +89,25 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addLayout(self.verticalLayout_3)
 
+        self.verticalLayout_5 = QVBoxLayout()
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.button_step_last = QPushButton(self.centralwidget)
+        self.button_step_last.setObjectName(u"button_step_last")
+
+        self.verticalLayout_5.addWidget(self.button_step_last)
+
         self.button_step_next = QPushButton(self.centralwidget)
         self.button_step_next.setObjectName(u"button_step_next")
 
-        self.horizontalLayout.addWidget(self.button_step_next)
+        self.verticalLayout_5.addWidget(self.button_step_next)
+
+
+        self.horizontalLayout.addLayout(self.verticalLayout_5)
+
+        self.label_ste_text = QLabel(self.centralwidget)
+        self.label_ste_text.setObjectName(u"label_ste_text")
+
+        self.horizontalLayout.addWidget(self.label_ste_text)
 
         self.horizontalSpacer_8 = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -99,6 +115,13 @@ class Ui_MainWindow(object):
 
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.Label_HumanPose_status = QLabel(self.centralwidget)
+        self.Label_HumanPose_status.setObjectName(u"Label_HumanPose_status")
+        sizePolicy.setHeightForWidth(self.Label_HumanPose_status.sizePolicy().hasHeightForWidth())
+        self.Label_HumanPose_status.setSizePolicy(sizePolicy)
+
+        self.verticalLayout.addWidget(self.Label_HumanPose_status)
+
         self.Label_HandStop_Status = QLabel(self.centralwidget)
         self.Label_HandStop_Status.setObjectName(u"Label_HandStop_Status")
         sizePolicy.setHeightForWidth(self.Label_HandStop_Status.sizePolicy().hasHeightForWidth())
@@ -124,16 +147,16 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addLayout(self.verticalLayout)
 
 
-        self.gridLayout_3.addLayout(self.horizontalLayout, 0, 1, 1, 3)
+        self.verticalLayout_7.addLayout(self.horizontalLayout)
 
-        self.verticalSpacer = QSpacerItem(17, 17, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        self.verticalSpacer_3 = QSpacerItem(20, 68, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.gridLayout_3.addItem(self.verticalSpacer, 1, 2, 1, 1)
+        self.verticalLayout_7.addItem(self.verticalSpacer_3)
 
-        self.horizontalSpacer_6 = QSpacerItem(10, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
-
-        self.gridLayout_3.addItem(self.horizontalSpacer_6, 2, 0, 1, 1)
-
+        self.horizontalLayout_4 = QHBoxLayout()
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.verticalLayout_6 = QVBoxLayout()
+        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
         self.gridLayout_2 = QGridLayout()
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.input_media = QLabel(self.centralwidget)
@@ -150,7 +173,80 @@ class Ui_MainWindow(object):
         self.gridLayout_2.addWidget(self.input_media, 0, 1, 1, 1)
 
 
-        self.gridLayout_3.addLayout(self.gridLayout_2, 2, 1, 1, 1)
+        self.verticalLayout_6.addLayout(self.gridLayout_2)
+
+        self.verticalSpacer = QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_6.addItem(self.verticalSpacer)
+
+        self.horizontalLayout_3 = QHBoxLayout()
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.horizontalSpacer_5 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_3.addItem(self.horizontalSpacer_5)
+
+        self.button_picture = QPushButton(self.centralwidget)
+        self.button_picture.setObjectName(u"button_picture")
+        sizePolicy.setHeightForWidth(self.button_picture.sizePolicy().hasHeightForWidth())
+        self.button_picture.setSizePolicy(sizePolicy)
+        self.button_picture.setMinimumSize(QSize(150, 50))
+
+        self.horizontalLayout_3.addWidget(self.button_picture)
+
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_3.addItem(self.horizontalSpacer)
+
+        self.verticalLayout_2 = QVBoxLayout()
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.button_camera = QPushButton(self.centralwidget)
+        self.button_camera.setObjectName(u"button_camera")
+        sizePolicy.setHeightForWidth(self.button_camera.sizePolicy().hasHeightForWidth())
+        self.button_camera.setSizePolicy(sizePolicy)
+        self.button_camera.setMinimumSize(QSize(150, 25))
+        self.button_camera.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
+
+        self.verticalLayout_2.addWidget(self.button_camera)
+
+        self.horizontalLayout_2 = QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.camera_change1 = QPushButton(self.centralwidget)
+        self.camera_change1.setObjectName(u"camera_change1")
+
+        self.horizontalLayout_2.addWidget(self.camera_change1)
+
+        self.camera_change2 = QPushButton(self.centralwidget)
+        self.camera_change2.setObjectName(u"camera_change2")
+
+        self.horizontalLayout_2.addWidget(self.camera_change2)
+
+
+        self.verticalLayout_2.addLayout(self.horizontalLayout_2)
+
+
+        self.horizontalLayout_3.addLayout(self.verticalLayout_2)
+
+        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_3.addItem(self.horizontalSpacer_4)
+
+        self.button_video = QPushButton(self.centralwidget)
+        self.button_video.setObjectName(u"button_video")
+        sizePolicy.setHeightForWidth(self.button_video.sizePolicy().hasHeightForWidth())
+        self.button_video.setSizePolicy(sizePolicy)
+        self.button_video.setMinimumSize(QSize(150, 50))
+
+        self.horizontalLayout_3.addWidget(self.button_video)
+
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_3.addItem(self.horizontalSpacer_2)
+
+
+        self.verticalLayout_6.addLayout(self.horizontalLayout_3)
+
+
+        self.horizontalLayout_4.addLayout(self.verticalLayout_6)
 
         self.line = QFrame(self.centralwidget)
         self.line.setObjectName(u"line")
@@ -163,20 +259,10 @@ class Ui_MainWindow(object):
         self.line.setFrameShape(QFrame.Shape.VLine)
         self.line.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.gridLayout_3.addWidget(self.line, 2, 2, 1, 1)
+        self.horizontalLayout_4.addWidget(self.line)
 
         self.gridLayout = QGridLayout()
         self.gridLayout.setObjectName(u"gridLayout")
-        self.output_media2 = QLabel(self.centralwidget)
-        self.output_media2.setObjectName(u"output_media2")
-        sizePolicy1.setHeightForWidth(self.output_media2.sizePolicy().hasHeightForWidth())
-        self.output_media2.setSizePolicy(sizePolicy1)
-        self.output_media2.setMinimumSize(QSize(150, 125))
-        self.output_media2.setScaledContents(True)
-        self.output_media2.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.gridLayout.addWidget(self.output_media2, 0, 1, 1, 1)
-
         self.output_media = QLabel(self.centralwidget)
         self.output_media.setObjectName(u"output_media")
         sizePolicy1.setHeightForWidth(self.output_media.sizePolicy().hasHeightForWidth())
@@ -187,111 +273,32 @@ class Ui_MainWindow(object):
 
         self.gridLayout.addWidget(self.output_media, 0, 0, 1, 1)
 
-        self.output_media4 = QLabel(self.centralwidget)
-        self.output_media4.setObjectName(u"output_media4")
-        sizePolicy1.setHeightForWidth(self.output_media4.sizePolicy().hasHeightForWidth())
-        self.output_media4.setSizePolicy(sizePolicy1)
-        self.output_media4.setMinimumSize(QSize(150, 125))
-        self.output_media4.setScaledContents(True)
-        self.output_media4.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.output_media2 = QLabel(self.centralwidget)
+        self.output_media2.setObjectName(u"output_media2")
+        sizePolicy1.setHeightForWidth(self.output_media2.sizePolicy().hasHeightForWidth())
+        self.output_media2.setSizePolicy(sizePolicy1)
+        self.output_media2.setMinimumSize(QSize(150, 125))
+        self.output_media2.setScaledContents(True)
+        self.output_media2.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout.addWidget(self.output_media4, 1, 1, 1, 1)
-
-        self.output_media3 = QLabel(self.centralwidget)
-        self.output_media3.setObjectName(u"output_media3")
-        sizePolicy1.setHeightForWidth(self.output_media3.sizePolicy().hasHeightForWidth())
-        self.output_media3.setSizePolicy(sizePolicy1)
-        self.output_media3.setMinimumSize(QSize(150, 125))
-        self.output_media3.setScaledContents(True)
-        self.output_media3.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.gridLayout.addWidget(self.output_media3, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.output_media2, 1, 0, 1, 1)
 
 
-        self.gridLayout_3.addLayout(self.gridLayout, 2, 3, 1, 1)
-
-        self.horizontalSpacer_7 = QSpacerItem(10, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
-
-        self.gridLayout_3.addItem(self.horizontalSpacer_7, 2, 4, 1, 1)
-
-        self.verticalSpacer_2 = QSpacerItem(17, 18, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
-
-        self.gridLayout_3.addItem(self.verticalSpacer_2, 3, 2, 1, 1)
-
-        self.horizontalLayout_5 = QHBoxLayout()
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.horizontalSpacer_5 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_5.addItem(self.horizontalSpacer_5)
-
-        self.button_picture = QPushButton(self.centralwidget)
-        self.button_picture.setObjectName(u"button_picture")
-        sizePolicy.setHeightForWidth(self.button_picture.sizePolicy().hasHeightForWidth())
-        self.button_picture.setSizePolicy(sizePolicy)
-        self.button_picture.setMinimumSize(QSize(150, 50))
-
-        self.horizontalLayout_5.addWidget(self.button_picture)
-
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_5.addItem(self.horizontalSpacer)
-
-        self.verticalLayout_2 = QVBoxLayout()
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.button_camera = QPushButton(self.centralwidget)
-        self.button_camera.setObjectName(u"button_camera")
-        sizePolicy.setHeightForWidth(self.button_camera.sizePolicy().hasHeightForWidth())
-        self.button_camera.setSizePolicy(sizePolicy)
-        self.button_camera.setMinimumSize(QSize(150, 50))
-
-        self.verticalLayout_2.addWidget(self.button_camera, 0, Qt.AlignmentFlag.AlignHCenter)
-
-        self.horizontalLayout_3 = QHBoxLayout()
-        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.camera_change1 = QPushButton(self.centralwidget)
-        self.camera_change1.setObjectName(u"camera_change1")
-
-        self.horizontalLayout_3.addWidget(self.camera_change1)
-
-        self.camera_change2 = QPushButton(self.centralwidget)
-        self.camera_change2.setObjectName(u"camera_change2")
-
-        self.horizontalLayout_3.addWidget(self.camera_change2)
-
-        self.camera_change3 = QPushButton(self.centralwidget)
-        self.camera_change3.setObjectName(u"camera_change3")
-
-        self.horizontalLayout_3.addWidget(self.camera_change3)
-
-        self.camera_change4 = QPushButton(self.centralwidget)
-        self.camera_change4.setObjectName(u"camera_change4")
-
-        self.horizontalLayout_3.addWidget(self.camera_change4)
+        self.horizontalLayout_4.addLayout(self.gridLayout)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_3)
+        self.verticalLayout_7.addLayout(self.horizontalLayout_4)
 
 
-        self.horizontalLayout_5.addLayout(self.verticalLayout_2)
+        self.gridLayout_3.addLayout(self.verticalLayout_7, 0, 1, 1, 1)
 
-        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.horizontalSpacer_7 = QSpacerItem(106, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.horizontalLayout_5.addItem(self.horizontalSpacer_4)
+        self.gridLayout_3.addItem(self.horizontalSpacer_7, 0, 2, 1, 1)
 
-        self.button_video = QPushButton(self.centralwidget)
-        self.button_video.setObjectName(u"button_video")
-        sizePolicy.setHeightForWidth(self.button_video.sizePolicy().hasHeightForWidth())
-        self.button_video.setSizePolicy(sizePolicy)
-        self.button_video.setMinimumSize(QSize(150, 50))
+        self.verticalSpacer_2 = QSpacerItem(20, 69, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.horizontalLayout_5.addWidget(self.button_video)
-
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_5.addItem(self.horizontalSpacer_2)
-
-
-        self.gridLayout_3.addLayout(self.horizontalLayout_5, 4, 1, 1, 3)
+        self.gridLayout_3.addItem(self.verticalSpacer_2, 1, 1, 1, 1)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QStatusBar(MainWindow)
@@ -308,25 +315,23 @@ class Ui_MainWindow(object):
         self.button_offset.setText(QCoreApplication.translate("MainWindow", u"\u8abf\u6574offset", None))
         self.button_stop.setText(QCoreApplication.translate("MainWindow", u"stop", None))
         self.button_takepicture.setText(QCoreApplication.translate("MainWindow", u"\u7167\u76f8", None))
-        self.button_step_last.setText(QCoreApplication.translate("MainWindow", u"LAST", None))
         self.label_step_last.setText(QCoreApplication.translate("MainWindow", u"\u4e0a\u4e00\u6b65", None))
         self.label_step_now.setText(QCoreApplication.translate("MainWindow", u"\u73fe\u5728\u64cd\u4f5c", None))
         self.label_step_next.setText(QCoreApplication.translate("MainWindow", u"\u4e0b\u4e00\u6b65", None))
+        self.button_step_last.setText(QCoreApplication.translate("MainWindow", u"PREV", None))
         self.button_step_next.setText(QCoreApplication.translate("MainWindow", u"NEXT", None))
+        self.label_ste_text.setText(QCoreApplication.translate("MainWindow", u"STEP_TEXT", None))
+        self.Label_HumanPose_status.setText(QCoreApplication.translate("MainWindow", u"Human pose: N/A", None))
         self.Label_HandStop_Status.setText(QCoreApplication.translate("MainWindow", u"Hand on Stop: N/A", None))
         self.Label_HandFeed_Status.setText(QCoreApplication.translate("MainWindow", u"Hand on Feed: N/A", None))
         self.Label_KnifeBaseCollid_status.setText(QCoreApplication.translate("MainWindow", u"Knife_Base_Collided: N/A", None))
         self.input_media.setText(QCoreApplication.translate("MainWindow", u"\u539f\u59cb\u8f38\u5165", None))
-        self.output_media2.setText(QCoreApplication.translate("MainWindow", u"\u6aa2\u6e2c\u7d50\u679c", None))
-        self.output_media.setText(QCoreApplication.translate("MainWindow", u"\u6aa2\u6e2c\u7d50\u679c", None))
-        self.output_media4.setText(QCoreApplication.translate("MainWindow", u"\u6aa2\u6e2c\u7d50\u679c", None))
-        self.output_media3.setText(QCoreApplication.translate("MainWindow", u"\u6aa2\u6e2c\u7d50\u679c", None))
         self.button_picture.setText(QCoreApplication.translate("MainWindow", u"\u5716\u7247\u6aa2\u6e2c", None))
         self.button_camera.setText(QCoreApplication.translate("MainWindow", u"\u93e1\u982d\u6aa2\u6e2c", None))
         self.camera_change1.setText(QCoreApplication.translate("MainWindow", u"1", None))
         self.camera_change2.setText(QCoreApplication.translate("MainWindow", u"2", None))
-        self.camera_change3.setText(QCoreApplication.translate("MainWindow", u"3", None))
-        self.camera_change4.setText(QCoreApplication.translate("MainWindow", u"4", None))
         self.button_video.setText(QCoreApplication.translate("MainWindow", u"\u5f71\u7247\u6aa2\u6e2c", None))
+        self.output_media.setText(QCoreApplication.translate("MainWindow", u"\u6aa2\u6e2c\u7d50\u679c", None))
+        self.output_media2.setText(QCoreApplication.translate("MainWindow", u"\u6aa2\u6e2c\u7d50\u679c", None))
     # retranslateUi
 

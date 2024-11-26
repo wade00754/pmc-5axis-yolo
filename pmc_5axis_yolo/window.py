@@ -72,13 +72,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.Label_HandStop_Status.setText("Hand on Stop: N/A")
         self.Label_HandFeed_Status.setText("Hand on Feed: N/A")
         self.Label_KnifeBaseCollid_status.setText("Knife Base Collided: N/A")
+        self.Label_HumanPose_status.setText("Human Pose: N/A")
 
         self.now_step = 1
         self.steps_file = "SOP_step.txt"
         self.steps_totals = self.get_step_count()
+        self.init_step_label()
         self.update_step_label()
-        self.label_step_last.setStyleSheet("color: rgba(255, 255, 255, 128);")
-        self.label_step_next.setStyleSheet("color: rgba(255, 255, 255, 128);")
 
         self.target_folder = "captured_images"
         os.makedirs(self.target_folder, exist_ok=True)
@@ -88,40 +88,44 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.input_media,
             self.output_media,
             self.output_media2,
-            self.output_media3,
-            self.output_media4,
         ]
 
         self.camera_change_button = [
             self.camera_change1,
             self.camera_change2,
-            self.camera_change3,
-            self.camera_change4,
             self.button_takepicture,
         ]
 
         self.change_mode()
 
     # ~~~~~~~~~~~~~~~~~~~~~~step labelr~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    def update_step_label(self):
-
+    def init_step_label(self):
         step_descriptions = [
             (
-                self.get_step_description(self.now_step - 1)
-                if self.now_step > 1
-                else "N/A"
+                self.get_step_description(self.now_step) if self.now_step > 0 else "N/A"
             ),  # 上一步骤
-            self.get_step_description(self.now_step),  # 当前步骤
+            self.get_step_description(self.now_step + 1),  # 当前步骤
             (
-                self.get_step_description(self.now_step + 1)
-                if self.now_step < self.steps_totals
+                self.get_step_description(self.now_step + 2)
+                if self.now_step < self.steps_totals + 1
                 else "N/A"
             ),  # 下一步骤
         ]
 
-        self.label_step_last.setText(f"last: {step_descriptions[0]}")
-        self.label_step_now.setText(f"now: {step_descriptions[1]}")
-        self.label_step_next.setText(f"next: {step_descriptions[2]}")
+        self.label_step_last.setText(f"{step_descriptions[0]}")
+        self.label_step_now.setText(f"{step_descriptions[1]}")
+        self.label_step_next.setText(f"{step_descriptions[2]}")
+
+    def update_step_label(self):
+        self.label_step_last.setStyleSheet("color: rgba(255, 255, 255, 128);")
+        self.label_step_now.setStyleSheet("color: rgba(255, 255, 255, 128);")
+        self.label_step_next.setStyleSheet("color: rgba(255, 255, 255, 128);")
+        if self.now_step == 1:
+            self.label_step_last.setStyleSheet("color: rgba(255, 255, 255, 255);")
+        elif self.now_step == 2:
+            self.label_step_now.setStyleSheet("color: rgba(255, 255, 255, 255);")
+        elif self.now_step == 3:
+            self.label_step_next.setStyleSheet("color: rgba(255, 255, 255, 255);")
 
     def get_step_description(self, step_number):
         try:
@@ -145,7 +149,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.update_step_label()
 
     def get_step_count(self):
-        with open(self.steps_file, "r") as file:
+        with open(self.steps_file, "r", encoding="utf-8") as file:
             steps = file.readlines()
         return len(steps)
 
@@ -261,7 +265,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.Label_KnifeBaseCollid_status.setText(
             f"Knife Base Collided: {behavior.is_knife_base_collided.name}"
         )
-        if behavior.is_hand_on_stop.name == "NO":
+        self.Label_HumanPose_status.setText(f"Human Pose: {behavior.human_pose.name}")
+        if behavior.is_hand_on_stop.name == "NO" and self.now_step != 1:
             print("Hand not on stop button! Playing sound alert.")
             try:
                 winsound.PlaySound(
@@ -270,7 +275,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             except:
                 pass
             # playsound("warning.mp3", block=False) # this module has lots of bugs
-        if behavior.is_hand_on_feed.name == "NO":
+        if behavior.is_hand_on_feed.name == "NO" and self.now_step != 1:
             print("Hand not on stop button! Playing sound alert.")
             try:
                 winsound.PlaySound(
@@ -406,10 +411,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.output_media.setPixmap(QPixmap.fromImage(convert2QImage(image)))
             elif idx == 2:
                 self.output_media2.setPixmap(QPixmap.fromImage(convert2QImage(image)))
-            elif idx == 3:
-                self.output_media3.setPixmap(QPixmap.fromImage(convert2QImage(image)))
-            elif idx == 4:
-                self.output_media4.setPixmap(QPixmap.fromImage(convert2QImage(image)))
         print("==================\n")
 
     def now_big_camera(self):
@@ -441,8 +442,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.camera_change1.clicked.connect(self.change_camera_1)
         self.camera_change2.clicked.connect(self.change_camera_2)
-        self.camera_change3.clicked.connect(self.change_camera_3)
-        self.camera_change4.clicked.connect(self.change_camera_4)
 
         self.button_step_last.clicked.connect(self.step_ToPrevious)
         self.button_step_next.clicked.connect(self.step_ToNext)
@@ -468,8 +467,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def update_label_size(self):
         width = self.size().width()
-        new_width = width * 0.45
-        new_height = width * 0.45 / self.aspect_ratio
+        new_width = width * 0.4
+        new_height = width * 0.4 / self.aspect_ratio
 
         if self.camera_on == 0:
             for label in self.labels:
@@ -479,8 +478,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     label.setFixedSize(int(new_width), int(new_height))
 
         elif self.camera_on == 1:
-            output_width = int(new_width / 2)
-            output_height = int(new_height / 2)
+            output_width = int(new_width * 0.75)
+            output_height = int(new_height * 0.75)
 
             # 为 output_media 和其他 QLabel 设置尺寸
             for label in self.labels:
@@ -530,28 +529,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         #  gridLayout 的 (0, 0, 1, 1) 位置上
         if self.gridLayout.itemAtPosition(0, 0) is not None:
-            widget_at_0_0 = self.gridLayout.itemAtPosition(0, 1).widget()
-            if widget_at_0_0 in self.labels:
-                targetR = widget_at_0_0
-
-        if targetL is not None and targetR is not None:
-            self.gridLayout_2.removeWidget(targetL)
-            self.gridLayout_2.addWidget(targetR, 2, 1, 1, 1)
-            self.gridLayout.removeWidget(targetR)
-
-            self.gridLayout.addWidget(targetL, 0, 1, 1, 1)
-            self.update_label_size()
-
-    def change_camera_3(self):
-        targetL = None
-        targetR = None
-
-        for Left in self.labels:
-            if self.gridLayout_2.indexOf(Left) != -1:
-                targetL = Left
-
-        #  gridLayout 的 (0, 0, 1, 1) 位置上
-        if self.gridLayout.itemAtPosition(0, 0) is not None:
             widget_at_0_0 = self.gridLayout.itemAtPosition(1, 0).widget()
             if widget_at_0_0 in self.labels:
                 targetR = widget_at_0_0
@@ -562,26 +539,4 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.gridLayout.removeWidget(targetR)
 
             self.gridLayout.addWidget(targetL, 1, 0, 1, 1)
-            self.update_label_size()
-
-    def change_camera_4(self):
-        targetL = None
-        targetR = None
-
-        for Left in self.labels:
-            if self.gridLayout_2.indexOf(Left) != -1:
-                targetL = Left
-
-        #  gridLayout 的 (0, 0, 1, 1) 位置上
-        if self.gridLayout.itemAtPosition(0, 0) is not None:
-            widget_at_0_0 = self.gridLayout.itemAtPosition(1, 1).widget()
-            if widget_at_0_0 in self.labels:
-                targetR = widget_at_0_0
-
-        if targetL is not None and targetR is not None:
-            self.gridLayout_2.removeWidget(targetL)
-            self.gridLayout_2.addWidget(targetR, 2, 1, 1, 1)
-            self.gridLayout.removeWidget(targetR)
-
-            self.gridLayout.addWidget(targetL, 1, 1, 1, 1)
             self.update_label_size()
