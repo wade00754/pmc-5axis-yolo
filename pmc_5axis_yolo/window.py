@@ -382,7 +382,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.video = []
         for i in range(CAMERA_COUNT):
             print(f"Turning on camera {i}...")
-            cap = cv2.VideoCapture(i, cv2.CAP_DSHOW)  # this is the magic!
+            cap = cv2.VideoCapture(i)
 
             cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
             cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
