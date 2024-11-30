@@ -75,7 +75,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.Label_HumanPose_status.setText("Human Pose: N/A")
 
         self.now_step = 1
-        self.steps_file = "SOP_step.txt"
+        self.steps_file = "texts/SOP_step.txt"
+        self.steps_table = "texts/steps_table.txt"
         self.steps_totals = self.get_step_count()
         self.init_step_label()
         self.update_step_label()
@@ -117,6 +118,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.label_step_next.setText(f"{step_descriptions[2]}")
 
     def update_step_label(self):
+        self.load_step_text(self.now_step)
         self.label_step_last.setStyleSheet("color: rgba(255, 255, 255, 128);")
         self.label_step_now.setStyleSheet("color: rgba(255, 255, 255, 128);")
         self.label_step_next.setStyleSheet("color: rgba(255, 255, 255, 128);")
@@ -136,7 +138,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 else:
                     return "N/A"
         except FileNotFoundError:
-            return "FileOpenError"
+            return "FileOpenError1"
+
+    def get_step_text(self, step_number):
+        try:
+            with open(self.steps_table, "r", encoding="utf-8") as file:
+                steps = file.readlines()
+                if 0 < step_number <= len(steps):
+                    return steps[step_number - 1].strip()
+                else:
+                    return "N/A"
+        except FileNotFoundError:
+            return "FileOpenError2"
+
+    def load_step_text(self, step_number):
+        step_file_name = self.get_step_text(step_number)
+        try:
+            with open(step_file_name, "r", encoding="utf-8") as file:
+                step_content = file.read().strip()  # 读取文件内容，移除首尾空白
+                self.label_ste_text.setText(step_content)
+        except FileNotFoundError:
+            return "FileOpenError3"
 
     def step_ToNext(self):
         if self.now_step < self.steps_totals:
