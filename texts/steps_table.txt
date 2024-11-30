@@ -1,0 +1,3 @@
+texts/step1.txt
+texts/step2.txt
+texts/step3.txt
