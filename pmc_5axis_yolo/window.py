@@ -75,6 +75,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.Label_HumanPose_status.setText("Human Pose: N/A")
 
         self.now_step = 1
+        self.sop_start = False
         self.steps_file = "texts/SOP_step.txt"
         self.steps_table = "texts/steps_table.txt"
         self.steps_totals = self.get_step_count()
@@ -102,14 +103,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # ~~~~~~~~~~~~~~~~~~~~~~step labelr~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def init_step_label(self):
         step_descriptions = [
-            (
-                self.get_step_description(self.now_step) if self.now_step > 0 else "N/A"
-            ),  # 上一步骤
+            (self.get_step_description(self.now_step) if self.now_step > 0 else "N/A"),  # 上一步骤
             self.get_step_description(self.now_step + 1),  # 当前步骤
             (
-                self.get_step_description(self.now_step + 2)
-                if self.now_step < self.steps_totals + 1
-                else "N/A"
+                self.get_step_description(self.now_step + 2) if self.now_step < self.steps_totals + 1 else "N/A"
             ),  # 下一步骤
         ]
 
@@ -247,18 +244,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         file_path = None
         if to_adj:
             print("Selecting a picture...")
-            file_path = QFileDialog.getOpenFileName(
-                self, dir="images", filter="*.jpg;*.png;*.jpeg"
-            )
+            file_path = QFileDialog.getOpenFileName(self, dir="images", filter="*.jpg;*.png;*.jpeg")
             if file_path[0]:
                 file_path = file_path[0]
                 print(f"Opened picture: {file_path}")
             else:
                 to_adj = False
                 print("No picture selected.")
-        self.offsets = adj_offsets(
-            to_adj, self.offsets, file_path, self.pose_model, self.object_model
-        )
+        self.offsets = adj_offsets(to_adj, self.offsets, file_path, self.pose_model, self.object_model)
 
     def test(self, file: str | MatLike | list[str | MatLike]) -> list[MatLike]:
         """
@@ -271,38 +264,51 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             list[MatLike]: The processed images in a list.
         """
 
-        image, behavior = predict_result(
-            file, self.pose_model, self.object_model, self.offsets
-        )
+        image, behavior = predict_result(file, self.pose_model, self.object_model, self.offsets)
         print(f"Is hand on stop button: {behavior.is_hand_on_stop.name}")
         print(f"Is hand on feed button: {behavior.is_hand_on_feed.name}")
         print(f"Does knife collide with base: {behavior.is_knife_base_collided.name}")
         print(f"Human pose: {behavior.human_pose.name}")
-        self.Label_HandStop_Status.setText(
-            f"Hand on Stop: {behavior.is_hand_on_stop.name}"
-        )
-        self.Label_HandFeed_Status.setText(
-            f"Hand on Feed: {behavior.is_hand_on_feed.name}"
-        )
-        self.Label_KnifeBaseCollid_status.setText(
-            f"Knife Base Collided: {behavior.is_knife_base_collided.name}"
-        )
+        self.Label_HandStop_Status.setText(f"Hand on Stop: {behavior.is_hand_on_stop.name}")
+        self.Label_HandFeed_Status.setText(f"Hand on Feed: {behavior.is_hand_on_feed.name}")
+        self.Label_KnifeBaseCollid_status.setText(f"Knife Base Collided: {behavior.is_knife_base_collided.name}")
         self.Label_HumanPose_status.setText(f"Human Pose: {behavior.human_pose.name}")
-        if behavior.is_hand_on_stop.name == "NO" and self.now_step != 1:
+
+        # switch SOP step TODO
+        match behavior.human_pose.name:
+            case "ARM_STRETCH":
+                if not self.sop_start:
+                    if not hasattr(self, "last_step_update") or time.time() - self.last_step_update > 10:
+                        self.now_step = 1
+                        self.update_step_label()
+                        self.last_step_update = time.time()
+                        self.sop_start = True
+            case "STAND":
+                if self.sop_start:
+                    if not hasattr(self, "last_step_update") or time.time() - self.last_step_update > 10:
+                        self.now_step = 2
+                        self.update_step_label()
+                        self.last_step_update = time.time()
+            case "ARM_BEND":
+                if self.sop_start:
+                    if not hasattr(self, "last_step_update") or time.time() - self.last_step_update > 10:
+                        self.now_step = 3
+                        self.update_step_label()
+                        self.last_step_update = time.time()
+                        self.sop_start = False
+
+        # Safety alert
+        if behavior.is_hand_on_stop.name == "NO" and self.now_step == 3:
             print("Hand not on stop button! Playing sound alert.")
             try:
-                winsound.PlaySound(
-                    "warning", winsound.SND_ASYNC | winsound.SND_NOSTOP
-                )  # only works on windows
+                winsound.PlaySound("warning", winsound.SND_ASYNC | winsound.SND_NOSTOP)  # only works on windows
             except:
                 pass
             # playsound("warning.mp3", block=False) # this module has lots of bugs
-        if behavior.is_hand_on_feed.name == "NO" and self.now_step != 1:
+        if behavior.is_hand_on_feed.name == "NO" and self.now_step == 3:
             print("Hand not on stop button! Playing sound alert.")
             try:
-                winsound.PlaySound(
-                    "warning", winsound.SND_ASYNC | winsound.SND_NOSTOP
-                )  # only works on windows
+                winsound.PlaySound("warning", winsound.SND_ASYNC | winsound.SND_NOSTOP)  # only works on windows
             except:
                 pass
             # playsound("warning.mp3", block=False) # this module has lots of bugs
@@ -315,9 +321,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.change_mode()
 
         print("Selecting a picture...")
-        file_path = QFileDialog.getOpenFileName(
-            self, dir="images", filter="*.jpg;*.png;*.jpeg"
-        )
+        file_path = QFileDialog.getOpenFileName(self, dir="images", filter="*.jpg;*.png;*.jpeg")
         if file_path[0]:
             file_path = file_path[0]
             print(f"Opened picture: {file_path}")
@@ -382,7 +386,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.video = []
         for i in range(CAMERA_COUNT):
             print(f"Turning on camera {i}...")
-            cap = cv2.VideoCapture(i, cv2.CAP_DSHOW)  # this is the magic!
+            cap = cv2.VideoCapture(i)
 
             cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
             cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
@@ -421,6 +425,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.target_folder,
                     f"captured_{idx}_{time.strftime('%Y%m%d_%H%M%S')}.jpg",
                 )
+                os.makedirs(self.target_folder, exist_ok=True)
                 cv2.imwrite(filename, frame)
                 print(f"saved {filename}")
                 self.take_picture_flag = False
