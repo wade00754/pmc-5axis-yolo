@@ -425,6 +425,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.target_folder,
                     f"captured_{idx}_{time.strftime('%Y%m%d_%H%M%S')}.jpg",
                 )
+                os.makedirs(self.target_folder, exist_ok=True)
                 cv2.imwrite(filename, frame)
                 print(f"saved {filename}")
                 self.take_picture_flag = False
