@@ -73,7 +73,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.Label_HandFeed_Status.setText("Hand on Feed: N/A")
         self.Label_KnifeBaseCollid_status.setText("Knife Base Collided: N/A")
         self.Label_HumanPose_status.setText("Human Pose: N/A")
+
+        self.adjustmode = 1
         self.outputsize = 0.4
+        self.outputratio = 0.75
 
         self.now_step = 1
         self.sop_start = False
@@ -86,6 +89,43 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.target_folder = "captured_images"
         os.makedirs(self.target_folder, exist_ok=True)
         self.take_picture_flag = False
+
+        self.up_button = [
+            self.button_offset,
+            self.button_takepicture,
+            self.button_adjustment,
+            self.button_stop,
+            self.button_step_last,
+            self.button_step_next,
+        ]
+
+        self.adjust_buttons = [
+            self.button_output_minus,
+            self.button_output_plus,
+            self.button_output_ratio_minus,
+            self.button_output_ratio_plus,
+            self.button_object_minus,
+            self.button_object_plus,
+            self.button_word_minus,
+            self.button_word_plus,
+        ]
+
+        self.adjust_labels = [
+            self.label_adjust_object,
+            self.label_ratio_output,
+            self.label_adjust_output,
+            self.label_word_object,
+        ]
+        self.status_labels = [
+            self.Label_HandFeed_Status,
+            self.Label_HandStop_Status,
+            self.Label_HumanPose_status,
+            self.Label_KnifeBaseCollid_status,
+            self.label_step_last,
+            self.label_step_next,
+            self.label_step_now,
+            self.label_ste_text,
+        ]
 
         self.labels = [
             self.input_media,
@@ -100,6 +140,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ]
 
         self.change_mode()
+        self.adjustmode_switch()
 
     # ~~~~~~~~~~~~~~~~~~~~~~step labelr~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def init_step_label(self):
@@ -410,6 +451,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     label.setPixmap(QPixmap.fromImage(convert2QImage(image)))
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~UI adjust~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def adjustmode_switch(self):
+        self.adjustmode = 1 - self.adjustmode
+        for object in self.adjust_labels:
+            object.setVisible(self.adjustmode)
+        for object in self.adjust_buttons:
+            object.setVisible(self.adjustmode)
+
     def output_bigger(self):
         self.outputsize += 0.01
         self.update_label_size()
@@ -417,6 +465,65 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def output_smaller(self):
         self.outputsize -= 0.01
         self.update_label_size()
+
+    def output_rbigger(self):
+        self.outputratio += 0.01
+        self.update_label_size()
+
+    def output_rsmaller(self):
+        self.outputratio -= 0.01
+        self.update_label_size()
+
+    def object_resize(self, plusN):
+        old_height = self.button_offset.height()
+        new_height = int(old_height * plusN)
+
+        for object in self.up_button:
+            object.setMinimumHeight(new_height)
+            object.setMinimumWidth(new_height * 3)
+            # object.resize(new_width, new_height)
+
+        for object in self.adjust_buttons:
+            object.setMinimumHeight(new_height)
+            object.setMinimumWidth(new_height)
+
+        self.button_picture.setMinimumHeight(new_height * 2)
+        self.button_picture.setMinimumWidth(new_height * 6)
+        self.button_video.setMinimumHeight(new_height * 2)
+        self.button_video.setMinimumWidth(new_height * 6)
+        self.button_camera.setMinimumHeight(new_height)
+        self.button_camera.setMinimumWidth(new_height * 6)
+        self.camera_change1.setMinimumHeight(new_height)
+        self.camera_change1.setMinimumWidth(new_height * 3)
+        self.camera_change2.setMinimumHeight(new_height)
+        self.camera_change2.setMinimumWidth(new_height * 3)
+
+    def object_resizeB(self):
+        self.object_resize(1.1)
+
+    def object_resizeS(self):
+        self.object_resize(0.9)
+
+    def word_resize(self, plusN):
+        font = self.label_ste_text.font()
+        old_size = font.pointSize()
+        for label in self.adjust_labels:
+            font = label.font()
+            new_size = max(8, min(int(old_size + plusN), 48))
+            font.setPointSize(new_size)
+            label.setFont(font)
+
+        for label in self.status_labels:
+            font = label.font()
+            new_size = max(8, min(int(old_size + plusN), 48))
+            font.setPointSize(new_size)
+            label.setFont(font)
+
+    def word_resizeB(self):
+        self.word_resize(1)
+
+    def word_resizeS(self):
+        self.word_resize(-1)
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~camera test~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def open_camera(self):
@@ -508,8 +615,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.button_stop.clicked.connect(self.stop_test)
         self.button_takepicture.clicked.connect(self.take_picture_signal)
 
+        self.button_adjustment.clicked.connect(self.adjustmode_switch)
         self.button_output_plus.clicked.connect(self.output_bigger)
         self.button_output_minus.clicked.connect(self.output_smaller)
+        self.button_output_ratio_plus.clicked.connect(self.output_rbigger)
+        self.button_output_ratio_minus.clicked.connect(self.output_rsmaller)
+        self.button_object_plus.clicked.connect(self.object_resizeB)
+        self.button_object_minus.clicked.connect(self.object_resizeS)
+        self.button_word_plus.clicked.connect(self.word_resizeB)
+        self.button_word_minus.clicked.connect(self.word_resizeS)
 
         self.camera_change1.clicked.connect(self.change_camera_1)
         self.camera_change2.clicked.connect(self.change_camera_2)
@@ -538,7 +652,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def update_label_size(self):
         width = self.size().width()
-        print(self.outputsize)
         new_width = width * self.outputsize
         new_height = width * self.outputsize / self.aspect_ratio
 
@@ -550,8 +663,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     label.setFixedSize(int(new_width), int(new_height))
 
         elif self.camera_on == 1:
-            output_width = int(new_width * 0.75)
-            output_height = int(new_height * 0.75)
+            output_width = int(new_width * self.outputratio)
+            output_height = int(new_height * self.outputratio)
 
             # 为 output_media 和其他 QLabel 设置尺寸
             for label in self.labels:
