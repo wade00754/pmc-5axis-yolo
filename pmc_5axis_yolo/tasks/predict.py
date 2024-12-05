@@ -11,6 +11,7 @@ from ..settings import (
     ARM_ANGLE_THRESHOLD,
     ARM_BEND_THRESHOLD,
     ARM_STRETCH_THRESHOLD,
+    BUTTON_THRESHOLD,
     LIE_THRESHOLD,
     PREDICT_VERBOSE,
 )
@@ -134,8 +135,12 @@ def predict_safe(pose_results: list[Results], object_results: list[Results], off
                     left_hand_y = left_hand[1] + offsets.get("stop_y", 0)
                     behavior.is_hand_on_stop = (
                         SafeState.YES
-                        if regions["stop"].x_min <= left_hand_x <= regions["stop"].x_max
-                        and regions["stop"].y_min <= left_hand_y <= regions["stop"].y_max
+                        if regions["stop"].x_min - BUTTON_THRESHOLD
+                        <= left_hand_x
+                        <= regions["stop"].x_max + BUTTON_THRESHOLD
+                        and regions["stop"].y_min - BUTTON_THRESHOLD
+                        <= left_hand_y
+                        <= regions["stop"].y_max + BUTTON_THRESHOLD
                         else SafeState.NO
                     )
 
@@ -146,8 +151,12 @@ def predict_safe(pose_results: list[Results], object_results: list[Results], off
                     right_hand_y = right_hand[1] + offsets.get("feed_y", 0)
                     behavior.is_hand_on_feed = (
                         SafeState.YES
-                        if regions["feed"].x_min <= right_hand_x <= regions["feed"].x_max
-                        and regions["feed"].y_min <= right_hand_y <= regions["feed"].y_max
+                        if regions["feed"].x_min - BUTTON_THRESHOLD
+                        <= right_hand_x
+                        <= regions["feed"].x_max + BUTTON_THRESHOLD
+                        and regions["feed"].y_min - BUTTON_THRESHOLD
+                        <= right_hand_y
+                        <= regions["feed"].y_max + BUTTON_THRESHOLD
                         else SafeState.NO
                     )
         if idx == 2 or single:

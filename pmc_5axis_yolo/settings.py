@@ -8,6 +8,7 @@ DEFAULT_OFFSETS = {
     "feed_y": -10,
 }
 CAMERA_COUNT = 3  # MAX 5
+BUTTON_THRESHOLD = 20
 LIE_THRESHOLD = 0.14  # normalized
 ARM_ANGLE_THRESHOLD = 150  # degrees
 ARM_STRETCH_THRESHOLD = 0.1  # normalized
