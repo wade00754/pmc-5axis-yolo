@@ -23,7 +23,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1030, 546)
+        MainWindow.resize(1777, 952)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.gridLayout_3 = QGridLayout(self.centralwidget)
@@ -32,10 +32,10 @@ class Ui_MainWindow(object):
 
         self.gridLayout_3.addItem(self.horizontalSpacer_6, 0, 0, 1, 1)
 
-        self.verticalLayout_7 = QVBoxLayout()
-        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
-        self.horizontalLayout = QHBoxLayout()
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.verticalLayout_8 = QVBoxLayout()
+        self.verticalLayout_8.setObjectName(u"verticalLayout_8")
+        self.horizontalLayout_8 = QHBoxLayout()
+        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
         self.verticalLayout_4 = QVBoxLayout()
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.button_offset = QPushButton(self.centralwidget)
@@ -48,13 +48,6 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_4.addWidget(self.button_offset)
 
-        self.button_stop = QPushButton(self.centralwidget)
-        self.button_stop.setObjectName(u"button_stop")
-        sizePolicy.setHeightForWidth(self.button_stop.sizePolicy().hasHeightForWidth())
-        self.button_stop.setSizePolicy(sizePolicy)
-
-        self.verticalLayout_4.addWidget(self.button_stop)
-
         self.button_takepicture = QPushButton(self.centralwidget)
         self.button_takepicture.setObjectName(u"button_takepicture")
         sizePolicy.setHeightForWidth(self.button_takepicture.sizePolicy().hasHeightForWidth())
@@ -62,12 +55,109 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_4.addWidget(self.button_takepicture)
 
+        self.button_adjustment = QPushButton(self.centralwidget)
+        self.button_adjustment.setObjectName(u"button_adjustment")
 
-        self.horizontalLayout.addLayout(self.verticalLayout_4)
+        self.verticalLayout_4.addWidget(self.button_adjustment)
+
+        self.button_stop = QPushButton(self.centralwidget)
+        self.button_stop.setObjectName(u"button_stop")
+        sizePolicy.setHeightForWidth(self.button_stop.sizePolicy().hasHeightForWidth())
+        self.button_stop.setSizePolicy(sizePolicy)
+
+        self.verticalLayout_4.addWidget(self.button_stop)
+
+
+        self.horizontalLayout_8.addLayout(self.verticalLayout_4)
+
+        self.verticalLayout_7 = QVBoxLayout()
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.button_output_minus = QPushButton(self.centralwidget)
+        self.button_output_minus.setObjectName(u"button_output_minus")
+
+        self.horizontalLayout.addWidget(self.button_output_minus)
+
+        self.label_adjust_output = QLabel(self.centralwidget)
+        self.label_adjust_output.setObjectName(u"label_adjust_output")
+
+        self.horizontalLayout.addWidget(self.label_adjust_output)
+
+        self.button_output_plus = QPushButton(self.centralwidget)
+        self.button_output_plus.setObjectName(u"button_output_plus")
+
+        self.horizontalLayout.addWidget(self.button_output_plus)
+
+
+        self.verticalLayout_7.addLayout(self.horizontalLayout)
+
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.button_output_ratio_minus = QPushButton(self.centralwidget)
+        self.button_output_ratio_minus.setObjectName(u"button_output_ratio_minus")
+
+        self.horizontalLayout_5.addWidget(self.button_output_ratio_minus)
+
+        self.label_ratio_output = QLabel(self.centralwidget)
+        self.label_ratio_output.setObjectName(u"label_ratio_output")
+
+        self.horizontalLayout_5.addWidget(self.label_ratio_output)
+
+        self.button_output_ratio_plus = QPushButton(self.centralwidget)
+        self.button_output_ratio_plus.setObjectName(u"button_output_ratio_plus")
+
+        self.horizontalLayout_5.addWidget(self.button_output_ratio_plus)
+
+
+        self.verticalLayout_7.addLayout(self.horizontalLayout_5)
+
+        self.horizontalLayout_6 = QHBoxLayout()
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.button_object_minus = QPushButton(self.centralwidget)
+        self.button_object_minus.setObjectName(u"button_object_minus")
+
+        self.horizontalLayout_6.addWidget(self.button_object_minus)
+
+        self.label_adjust_object = QLabel(self.centralwidget)
+        self.label_adjust_object.setObjectName(u"label_adjust_object")
+
+        self.horizontalLayout_6.addWidget(self.label_adjust_object)
+
+        self.button_object_plus = QPushButton(self.centralwidget)
+        self.button_object_plus.setObjectName(u"button_object_plus")
+
+        self.horizontalLayout_6.addWidget(self.button_object_plus)
+
+
+        self.verticalLayout_7.addLayout(self.horizontalLayout_6)
+
+        self.horizontalLayout_7 = QHBoxLayout()
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.button_word_minus = QPushButton(self.centralwidget)
+        self.button_word_minus.setObjectName(u"button_word_minus")
+
+        self.horizontalLayout_7.addWidget(self.button_word_minus)
+
+        self.label_word_object = QLabel(self.centralwidget)
+        self.label_word_object.setObjectName(u"label_word_object")
+
+        self.horizontalLayout_7.addWidget(self.label_word_object)
+
+        self.button_word_plus = QPushButton(self.centralwidget)
+        self.button_word_plus.setObjectName(u"button_word_plus")
+
+        self.horizontalLayout_7.addWidget(self.button_word_plus)
+
+
+        self.verticalLayout_7.addLayout(self.horizontalLayout_7)
+
+
+        self.horizontalLayout_8.addLayout(self.verticalLayout_7)
 
         self.horizontalSpacer_3 = QSpacerItem(88, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.horizontalLayout.addItem(self.horizontalSpacer_3)
+        self.horizontalLayout_8.addItem(self.horizontalSpacer_3)
 
         self.verticalLayout_3 = QVBoxLayout()
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
@@ -87,7 +177,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.addWidget(self.label_step_next)
 
 
-        self.horizontalLayout.addLayout(self.verticalLayout_3)
+        self.horizontalLayout_8.addLayout(self.verticalLayout_3)
 
         self.verticalLayout_5 = QVBoxLayout()
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
@@ -102,16 +192,16 @@ class Ui_MainWindow(object):
         self.verticalLayout_5.addWidget(self.button_step_next)
 
 
-        self.horizontalLayout.addLayout(self.verticalLayout_5)
+        self.horizontalLayout_8.addLayout(self.verticalLayout_5)
 
         self.label_ste_text = QLabel(self.centralwidget)
         self.label_ste_text.setObjectName(u"label_ste_text")
 
-        self.horizontalLayout.addWidget(self.label_ste_text)
+        self.horizontalLayout_8.addWidget(self.label_ste_text)
 
         self.horizontalSpacer_8 = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.horizontalLayout.addItem(self.horizontalSpacer_8)
+        self.horizontalLayout_8.addItem(self.horizontalSpacer_8)
 
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -144,14 +234,14 @@ class Ui_MainWindow(object):
         self.verticalLayout.addWidget(self.Label_KnifeBaseCollid_status)
 
 
-        self.horizontalLayout.addLayout(self.verticalLayout)
+        self.horizontalLayout_8.addLayout(self.verticalLayout)
 
 
-        self.verticalLayout_7.addLayout(self.horizontalLayout)
+        self.verticalLayout_8.addLayout(self.horizontalLayout_8)
 
         self.verticalSpacer_3 = QSpacerItem(20, 68, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.verticalLayout_7.addItem(self.verticalSpacer_3)
+        self.verticalLayout_8.addItem(self.verticalSpacer_3)
 
         self.horizontalLayout_4 = QHBoxLayout()
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
@@ -287,10 +377,10 @@ class Ui_MainWindow(object):
         self.horizontalLayout_4.addLayout(self.gridLayout)
 
 
-        self.verticalLayout_7.addLayout(self.horizontalLayout_4)
+        self.verticalLayout_8.addLayout(self.horizontalLayout_4)
 
 
-        self.gridLayout_3.addLayout(self.verticalLayout_7, 0, 1, 1, 1)
+        self.gridLayout_3.addLayout(self.verticalLayout_8, 0, 1, 1, 1)
 
         self.horizontalSpacer_7 = QSpacerItem(106, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -313,8 +403,21 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.button_offset.setText(QCoreApplication.translate("MainWindow", u"\u8abf\u6574offset", None))
-        self.button_stop.setText(QCoreApplication.translate("MainWindow", u"stop", None))
         self.button_takepicture.setText(QCoreApplication.translate("MainWindow", u"\u7167\u76f8", None))
+        self.button_adjustment.setText(QCoreApplication.translate("MainWindow", u"\u8abf\u6574", None))
+        self.button_stop.setText(QCoreApplication.translate("MainWindow", u"stop", None))
+        self.button_output_minus.setText(QCoreApplication.translate("MainWindow", u"-", None))
+        self.label_adjust_output.setText(QCoreApplication.translate("MainWindow", u"\u8f38\u51fa\u5927\u5c0f", None))
+        self.button_output_plus.setText(QCoreApplication.translate("MainWindow", u"+", None))
+        self.button_output_ratio_minus.setText(QCoreApplication.translate("MainWindow", u"-", None))
+        self.label_ratio_output.setText(QCoreApplication.translate("MainWindow", u"\u8f38\u51fa\u6bd4\u4f8b", None))
+        self.button_output_ratio_plus.setText(QCoreApplication.translate("MainWindow", u"+", None))
+        self.button_object_minus.setText(QCoreApplication.translate("MainWindow", u"-", None))
+        self.label_adjust_object.setText(QCoreApplication.translate("MainWindow", u"\u7269\u4ef6\u5927\u5c0f", None))
+        self.button_object_plus.setText(QCoreApplication.translate("MainWindow", u"+", None))
+        self.button_word_minus.setText(QCoreApplication.translate("MainWindow", u"-", None))
+        self.label_word_object.setText(QCoreApplication.translate("MainWindow", u"\u6587\u5b57\u5927\u5c0f", None))
+        self.button_word_plus.setText(QCoreApplication.translate("MainWindow", u"+", None))
         self.label_step_last.setText(QCoreApplication.translate("MainWindow", u"\u4e0a\u4e00\u6b65", None))
         self.label_step_now.setText(QCoreApplication.translate("MainWindow", u"\u73fe\u5728\u64cd\u4f5c", None))
         self.label_step_next.setText(QCoreApplication.translate("MainWindow", u"\u4e0b\u4e00\u6b65", None))
