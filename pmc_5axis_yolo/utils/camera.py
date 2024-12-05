@@ -8,7 +8,10 @@ import numpy as np
 
 def test_camera_num():
     cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
     print(f"Switch to camera 0")
+    print(f"Camera 0 is on. Resolution: {cap.get(cv2.CAP_PROP_FRAME_WIDTH)}x{cap.get(cv2.CAP_PROP_FRAME_HEIGHT)}")
 
     while True:
         if not cap.isOpened():
@@ -26,10 +29,15 @@ def test_camera_num():
         elif ord("0") <= key <= ord("9"):
             new_index = key - ord("0")
             new_cap = cv2.VideoCapture(new_index)
+            new_cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+            new_cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
             if new_cap.isOpened():
                 cap.release()
                 cap = new_cap
                 print(f"Switch to camera {new_index}")
+                print(
+                    f"Camera {new_index} is on. Resolution: {cap.get(cv2.CAP_PROP_FRAME_WIDTH)}x{cap.get(cv2.CAP_PROP_FRAME_HEIGHT)}"
+                )
             else:
                 new_cap.release()
                 print(f"Failed to switch to camera {new_index}")

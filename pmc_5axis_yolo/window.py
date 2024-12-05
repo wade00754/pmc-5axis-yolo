@@ -536,8 +536,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print(f"Turning on camera {i}...")
             cap = cv2.VideoCapture(i)
 
-            cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+            cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
             if not cap.isOpened():
                 print(f"Camera {i} did not turn on.")
             else:
