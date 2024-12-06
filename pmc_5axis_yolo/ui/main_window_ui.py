@@ -199,7 +199,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_8.addWidget(self.label_ste_text)
 
-        self.horizontalSpacer_8 = QSpacerItem(18, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.horizontalSpacer_8 = QSpacerItem(50, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_8.addItem(self.horizontalSpacer_8)
 
@@ -235,6 +235,10 @@ class Ui_MainWindow(object):
 
 
         self.horizontalLayout_8.addLayout(self.verticalLayout)
+
+        self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_8.addItem(self.horizontalSpacer_9)
 
 
         self.verticalLayout_8.addLayout(self.horizontalLayout_8)
