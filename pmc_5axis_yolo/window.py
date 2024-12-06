@@ -334,7 +334,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         self.last_step_update = cur_time
             case "ARM_BEND":
                 if self.sop_start and self.now_step == 2:
-                    if not hasattr(self, "last_step_update") or cur_time - self.last_step_update > 30:
+                    if not hasattr(self, "last_step_update") or cur_time - self.last_step_update > 25:
                         self.now_step = 3
                         self.update_step_label()
                         self.last_step_update = cur_time

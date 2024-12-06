@@ -205,7 +205,7 @@ def predict_result(
     # ------------------------------
     # 使用你自訓練的物件偵測模型進行偵測
     print("Predicting objects...")
-    object_results = object_model.predict(image, conf=0.3, verbose=PREDICT_VERBOSE)
+    object_results = object_model.predict(image, conf=0.2, verbose=PREDICT_VERBOSE)
     # print(f"Predict Time: {(time.time() - predict_time)*1000:.2f} ms")
 
     # draw_time = time.time()
