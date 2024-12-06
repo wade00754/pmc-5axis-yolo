@@ -124,11 +124,11 @@ def predict_safe(pose_results: list[Results], object_results: list[Results], off
         # 提取 stop、feed、knife 和 base 的範圍
         regions = extract_object_regions(object_result, ["stop", "feed", "knife", "base"])
 
-        if idx == 2 or single:
+        if idx == 1 or single:
             # 判斷人的姿態
             if person:
                 behavior.human_pose = classify_pose(keypoints.xyn[0])
-        if idx == 1 or single:
+        if idx == 2 or single:
             # 判斷左手是否在 Stop 按鈕上
             if regions["stop"] and person:
                 if sum(left_hand) != 0:  # 有偵測到左手
@@ -193,7 +193,7 @@ def predict_result(
     # ------------------------------
     # 使用 YOLOv8n-pose 進行姿態估計
     print("Predicting pose...")
-    pose_results = pose_model.predict(image, conf=0.5, verbose=PREDICT_VERBOSE)
+    pose_results = pose_model.predict(image, conf=0.8, verbose=PREDICT_VERBOSE)
 
     # 繪製姿態估計結果
     pose_annotated_frames = []

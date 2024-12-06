@@ -313,7 +313,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print(f"Human pose: {behavior.human_pose.name}")
         self.Label_HandStop_Status.setText(f"Hand on Stop: {behavior.is_hand_on_stop.name}")
         self.Label_HandFeed_Status.setText(f"Hand on Feed: {behavior.is_hand_on_feed.name}")
-        self.Label_KnifeBaseCollid_status.setText(f"Knife Base Collided: {behavior.is_knife_base_collided.name}")
+        # self.Label_KnifeBaseCollid_status.setText(f"Knife Base Collided: {behavior.is_knife_base_collided.name}")
         self.Label_HumanPose_status.setText(f"Human Pose: {behavior.human_pose.name}")
 
         # switch SOP step TODO
@@ -321,24 +321,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         match behavior.human_pose.name:
             case "ARM_STRETCH":
                 if not self.sop_start:
-                    if not hasattr(self, "last_step_update") or cur_time - self.last_step_update > 10:
+                    if not hasattr(self, "last_step_update") or cur_time - self.last_step_update > 20:
                         self.now_step = 1
                         self.update_step_label()
                         self.last_step_update = cur_time
                         self.sop_start = True
             case "STAND":
-                if self.sop_start:
-                    if not hasattr(self, "last_step_update") or cur_time - self.last_step_update > 10:
+                if self.sop_start and self.now_step == 1:
+                    if not hasattr(self, "last_step_update") or cur_time - self.last_step_update > 20:
                         self.now_step = 2
                         self.update_step_label()
                         self.last_step_update = cur_time
             case "ARM_BEND":
-                if self.sop_start:
-                    if not hasattr(self, "last_step_update") or cur_time - self.last_step_update > 10:
+                if self.sop_start and self.now_step == 2:
+                    if not hasattr(self, "last_step_update") or cur_time - self.last_step_update > 30:
                         self.now_step = 3
                         self.update_step_label()
                         self.last_step_update = cur_time
                         self.sop_start = False
+
+        self.Label_KnifeBaseCollid_status.setText(
+            f"Knife Base Collided: {behavior.is_knife_base_collided.name}\nSOP start: {self.sop_start} Step:{self.now_step}"
+        )
 
         # Safety alert
         if behavior.is_hand_on_stop.name == "NO" and self.now_step == 3:
@@ -400,7 +404,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print(f"Opened video: {file_path}")
             self.video = cv2.VideoCapture(file_path)
             video_fps = self.video.get(cv2.CAP_PROP_FPS)
-            self.video_timer.setInterval(1000 / video_fps)
+            self.video_timer.setInterval(1)
             self.get_input_ratio()
             self.video_timer.start()
         else:
@@ -410,6 +414,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ret, frame = self.video.read()
         if not ret:
             self.video_timer.stop()
+            print("Video finished...")
         else:
             image = self.test(frame)[0]
             print("Testing video...")
@@ -506,8 +511,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print(f"Turning on camera {i}...")
             cap = cv2.VideoCapture(i)
 
-            cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+            cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
             if not cap.isOpened():
                 print(f"Camera {i} did not turn on.")
             else:
@@ -579,6 +584,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.take_picture_flag = True
 
     def stop_test(self):
+        self.sop_start = False
+        self.now_step = 1
         for timer in self.timers:
             timer.stop()
         for video in self.video:
