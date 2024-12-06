@@ -1,3 +1,4 @@
+# import time
 from dataclasses import dataclass, fields
 from enum import Enum
 
@@ -123,11 +124,11 @@ def predict_safe(pose_results: list[Results], object_results: list[Results], off
         # 提取 stop、feed、knife 和 base 的範圍
         regions = extract_object_regions(object_result, ["stop", "feed", "knife", "base"])
 
-        if idx == 1 or single:
+        if idx == 2 or single:
             # 判斷人的姿態
             if person:
                 behavior.human_pose = classify_pose(keypoints.xyn[0])
-        if idx == 0 or single:
+        if idx == 1 or single:
             # 判斷左手是否在 Stop 按鈕上
             if regions["stop"] and person:
                 if sum(left_hand) != 0:  # 有偵測到左手
@@ -159,7 +160,7 @@ def predict_safe(pose_results: list[Results], object_results: list[Results], off
                         <= regions["feed"].y_max + BUTTON_THRESHOLD
                         else SafeState.NO
                     )
-        if idx == 2 or single:
+        if idx == 0 or single:
             # 判斷 Knife 是否碰到 Base
             if regions["knife"] and regions["base"]:
                 behavior.is_knife_base_collided = (
@@ -186,6 +187,7 @@ def predict_result(
     # if image_path is None:
     #     raise ValueError(f"無法讀取影像：{image_path}")
 
+    # predict_time = time.time()
     # ------------------------------
     # 步驟 1: 進行姿態估計
     # ------------------------------
@@ -204,7 +206,9 @@ def predict_result(
     # 使用你自訓練的物件偵測模型進行偵測
     print("Predicting objects...")
     object_results = object_model.predict(image, conf=0.3, verbose=PREDICT_VERBOSE)
+    # print(f"Predict Time: {(time.time() - predict_time)*1000:.2f} ms")
 
+    # draw_time = time.time()
     # 獲取類別數量（假設類別編號從 0 開始連續編號）
     num_classes = len(object_model.names)
     colors = generate_colors(num_classes)
@@ -270,7 +274,11 @@ def predict_result(
 
         ret_combined_frames.append(combined_frame)
 
+    # print(f"Draw Time: {(time.time() - draw_time)*1000:.2f} ms")
+
+    # behavior_time = time.time()
     ret_behavior = predict_safe(pose_results, object_results, offsets)
+    # print(f"Behavior Time: {(time.time() - behavior_time)*1000:.2f} ms")
 
     # # TODO: behavior判斷不準確 11/29改成不同攝影機處理不同行為
     # ret_behavior = Behavior()
