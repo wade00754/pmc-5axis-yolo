@@ -279,8 +279,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # 設定手腕調整值
     def set_offsets(self):
-        for timer in self.timers:
-            timer.stop()
+        # for timer in self.timers:
+        #     timer.stop()
         # TODO: objects範圍寬限值
         to_adj = True
         file_path = None

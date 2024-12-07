@@ -124,11 +124,11 @@ def predict_safe(pose_results: list[Results], object_results: list[Results], off
         # 提取 stop、feed、knife 和 base 的範圍
         regions = extract_object_regions(object_result, ["stop", "feed", "knife", "base"])
 
-        if idx == 1 or single:
+        if idx == 2 or single:
             # 判斷人的姿態
             if person:
                 behavior.human_pose = classify_pose(keypoints.xyn[0])
-        if idx == 2 or single:
+        if idx == 1 or single:
             # 判斷左手是否在 Stop 按鈕上
             if regions["stop"] and person:
                 if sum(left_hand) != 0:  # 有偵測到左手
@@ -205,7 +205,7 @@ def predict_result(
     # ------------------------------
     # 使用你自訓練的物件偵測模型進行偵測
     print("Predicting objects...")
-    object_results = object_model.predict(image, conf=0.2, verbose=PREDICT_VERBOSE)
+    object_results = object_model.predict(image, conf=0.1, verbose=PREDICT_VERBOSE)
     # print(f"Predict Time: {(time.time() - predict_time)*1000:.2f} ms")
 
     # draw_time = time.time()
