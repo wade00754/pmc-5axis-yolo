@@ -4,7 +4,6 @@ import winsound
 
 import cv2
 from cv2.typing import MatLike
-from playsound import playsound
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import (
